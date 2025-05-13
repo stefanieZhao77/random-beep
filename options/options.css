@@ -1,0 +1,269 @@
+/**
+ * options.css
+ * 
+ * Styles for the Random Beep options page
+ */
+
+:root {
+  --primary-color: #3F51B5;
+  --secondary-color: #FFC107;
+  --text-color: #333333;
+  --background-color: #FFFFFF;
+  --border-color: #E0E0E0;
+  --success-color: #4CAF50;
+  --warning-color: #FF9800;
+  --danger-color: #F44336;
+  --disabled-color: #9E9E9E;
+  --section-background: #F9F9F9;
+}
+
+/* Dark theme variables */
+.dark-theme {
+  --primary-color: #5C6BC0;
+  --secondary-color: #FFD54F;
+  --text-color: #F5F5F5;
+  --background-color: #212121;
+  --border-color: #424242;
+  --section-background: #2C2C2C;
+}
+
+/* Light theme variables */
+.light-theme {
+  --primary-color: #3F51B5;
+  --secondary-color: #FFC107;
+  --text-color: #212121;
+  --background-color: #F5F5F5;
+  --border-color: #E0E0E0;
+  --section-background: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+.settings-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: var(--section-background);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-group {
+  display: grid;
+  gap: 15px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  font-weight: 500;
+}
+
+input[type="number"] {
+  width: 80px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unit {
+  color: var(--disabled-color);
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.radio-label, .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+input[type="radio"], input[type="checkbox"] {
+  cursor: pointer;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="color"] {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.color-value {
+  font-family: monospace;
+}
+
+.custom-theme-setting {
+  display: none;
+}
+
+.show-custom-theme .custom-theme-setting {
+  display: flex;
+}
+
+footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.primary-button, .secondary-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: var(--primary-color);
+  opacity: 0.9;
+}
+
+.secondary-button {
+  background-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.secondary-button:hover {
+  background-color: var(--border-color);
+  opacity: 0.9;
+}
+
+.success-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--success-color);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.success-message.show {
+  opacity: 1;
+}
+
+/* Sound preview button styles */
+.preview-sound-btn {
+  padding: 4px 8px;
+  font-size: 0.8em;
+  margin-left: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.preview-sound-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.sound-selection-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .settings-section {
+    padding: 15px;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  footer {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .primary-button, .secondary-button {
+    width: 100%;
+  }
+}

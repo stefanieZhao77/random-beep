@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Beep Statistics</title>
+  <link rel="stylesheet" href="statistics.css">
+  <script src="../lib/chart.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Focus Statistics</h1>
+      <button id="back-button" class="icon-button" title="Back to Extension">↩️</button>
+    </header>
+
+    <main>
+      <section class="stats-section">
+        <h2>Daily Overview</h2>
+        <div class="chart-container">
+          <canvas id="daily-chart"></canvas>
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>Focus Metrics</h2>
+        <div class="metrics-container">
+          <div class="metrics-group">
+            <h3>Today</h3>
+            <ul class="metrics-list" id="today-metrics">
+              <li>Total Focus Time: <span id="today-focus-time">0h 0m</span></li>
+              <li>Short Breaks: <span id="today-short-breaks">0</span></li>
+              <li>Long Breaks: <span id="today-long-breaks">0</span></li>
+              <li>Sessions Completed: <span id="today-sessions">0</span></li>
+            </ul>
+          </div>
+
+          <div class="metrics-group">
+            <h3>This Week</h3>
+            <ul class="metrics-list" id="week-metrics">
+              <li>Total Focus Time: <span id="week-focus-time">0h 0m</span></li>
+              <li>Short Breaks: <span id="week-short-breaks">0</span></li>
+              <li>Long Breaks: <span id="week-long-breaks">0</span></li>
+              <li>Sessions Completed: <span id="week-sessions">0</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>Break Distribution</h2>
+        <div class="chart-container">
+          <canvas id="break-chart"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <button id="export-button" class="primary-button">Export Data</button>
+      <button id="clear-button" class="danger-button">Clear History</button>
+    </footer>
+  </div>
+
+  <script type="module" src="statistics.js"></script>
+</body>
+</html>

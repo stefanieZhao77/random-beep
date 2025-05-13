@@ -1,0 +1,57 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# User Interface Components
+
+The Random Beep extension has three main UI components: Popup, Options page, and Statistics page.
+
+## Popup Interface
+
+The popup is the main user interaction point:
+
+- [popup/popup.html](mdc:popup/popup.html): HTML structure
+- [popup/popup.js](mdc:popup/popup.js): UI logic 
+- [popup/popup.css](mdc:popup/popup.css): Styling
+
+The popup provides:
+- Current session status
+- Timer display
+- Control buttons (Start, Pause, Reset)
+- Daily statistics summary
+- Link to full statistics page
+
+## Options Page
+
+The options page allows the user to customize the extension:
+
+- [options/options.html](mdc:options/options.html): HTML structure
+- [options/options.js](mdc:options/options.js): Settings logic
+- [options/options.css](mdc:options/options.css): Styling
+
+It manages:
+- Timer duration settings
+- Break frequency settings
+- Notification preferences
+- Theme customization
+
+## Statistics Page
+
+The statistics page visualizes the user's focus data:
+
+- [statistics/statistics.html](mdc:statistics/statistics.html): HTML structure
+- [statistics/statistics.js](mdc:statistics/statistics.js): Data visualization
+- [statistics/statistics.css](mdc:statistics/statistics.css): Styling
+
+Features:
+- Daily focus time charts
+- Break distribution visualization
+- Focus metrics display
+- Data export options
+
+## Common UI Utilities
+
+Shared UI utilities can be found in:
+- [utils/dom-utils.js](mdc:utils/dom-utils.js): DOM manipulation utilities
+- [utils/time-utils.js](mdc:utils/time-utils.js): Time formatting and calculations

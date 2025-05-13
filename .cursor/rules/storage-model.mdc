@@ -1,0 +1,79 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Storage and Data Model
+
+The Random Beep extension uses Chrome's storage API to persist settings, session state, and statistics.
+
+## Storage Modules
+
+- [storage/settings.js](mdc:storage/settings.js): Manages user preferences
+- [storage/session.js](mdc:storage/session.js): Tracks current session state
+- [storage/statistics.js](mdc:storage/statistics.js): Records and retrieves usage statistics
+
+## Data Schemas
+
+### Settings Schema
+
+```javascript
+{
+  settings: {
+    shortPeriodDuration: 5,       // minutes
+    shortBreakDuration: 10,       // seconds
+    longPeriodDuration: 90,       // minutes
+    longBreakDuration: 20,        // minutes
+    shortBreakFrequency: "medium", // "low", "medium", "high"
+    notificationSound: true,
+    autoStartNextSession: false,
+    theme: "default"              // "default", "dark", "light", "custom"
+  }
+}
+```
+
+### Session Data Schema
+
+```javascript
+{
+  currentSession: {
+    id: "uuid",
+    startTime: timestamp,
+    shortBreaksTaken: [timestamp1, timestamp2, ...],
+    shortBreakCount: 3,
+    state: "active", // "active", "shortBreak", "longBreak", "paused", "idle"
+    elapsedTime: 1200 // seconds
+  }
+}
+```
+
+### Statistics Schema
+
+```javascript
+{
+  statistics: {
+    dailyFocus: {
+      "2025-05-12": {
+        totalFocusTime: 14400,     // seconds
+        shortBreaksTaken: 12,
+        longBreaksTaken: 2,
+        sessionsCompleted: 2
+      }
+    },
+    weeklyFocus: {
+      "2025-W19": {
+        totalFocusTime: 86400,     // seconds
+        shortBreaksTaken: 85,
+        longBreaksTaken: 14,
+        sessionsCompleted: 14
+      }
+    }
+  }
+}
+```
+
+## Storage API Interactions
+
+The extension uses:
+- `chrome.storage.sync` for settings and statistics (synced across devices)
+- `chrome.storage.local` for session state (device-specific)

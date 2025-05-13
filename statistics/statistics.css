@@ -1,0 +1,261 @@
+/**
+ * statistics.css
+ * 
+ * Styles for the Random Beep statistics page
+ */
+
+:root {
+  --primary-color: #3F51B5;
+  --secondary-color: #FFC107;
+  --text-color: #333333;
+  --background-color: #FFFFFF;
+  --border-color: #E0E0E0;
+  --success-color: #4CAF50;
+  --warning-color: #FF9800;
+  --danger-color: #F44336;
+  --disabled-color: #9E9E9E;
+  --section-background: #F9F9F9;
+  --chart-color-1: #3F51B5;
+  --chart-color-2: #FFC107;
+  --chart-color-3: #4CAF50;
+  --chart-color-4: #F44336;
+}
+
+/* Dark theme variables */
+.dark-theme {
+  --primary-color: #5C6BC0;
+  --secondary-color: #FFD54F;
+  --text-color: #F5F5F5;
+  --background-color: #212121;
+  --border-color: #424242;
+  --section-background: #2C2C2C;
+  --chart-color-1: #7986CB;
+  --chart-color-2: #FFE082;
+  --chart-color-3: #81C784;
+  --chart-color-4: #E57373;
+}
+
+/* Light theme variables */
+.light-theme {
+  --primary-color: #3F51B5;
+  --secondary-color: #FFC107;
+  --text-color: #212121;
+  --background-color: #F5F5F5;
+  --border-color: #E0E0E0;
+  --section-background: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.stats-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: var(--section-background);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.metrics-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.metrics-group {
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.metrics-list {
+  list-style: none;
+}
+
+.metrics-list li {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.metrics-list span {
+  font-weight: 500;
+}
+
+footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.primary-button, .danger-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: var(--primary-color);
+  opacity: 0.9;
+}
+
+.danger-button {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.danger-button:hover {
+  background-color: var(--danger-color);
+  opacity: 0.9;
+}
+
+.confirmation-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.confirmation-dialog.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dialog-content {
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.dialog-title {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+.dialog-message {
+  margin-bottom: 20px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+  
+  .metrics-container {
+    grid-template-columns: 1fr;
+  }
+  
+  footer {
+    flex-direction: column;
+  }
+  
+  .primary-button, .danger-button {
+    width: 100%;
+  }
+}
+
+/* Error message styling */
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border-left: 4px solid #f5c6cb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

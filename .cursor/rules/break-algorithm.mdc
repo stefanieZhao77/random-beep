@@ -1,0 +1,64 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Break Generation Algorithm
+
+The Random Beep extension uses a sophisticated algorithm to generate random break times during focus sessions.
+
+## Algorithm Files
+
+- [background/break-generator.js](mdc:background/break-generator.js): Main break generation logic
+- [background/timer.js](mdc:background/timer.js): Integration with timer functionality
+
+## Algorithm Overview
+
+The random break algorithm:
+
+1. Takes a period duration and frequency setting as input
+2. Calculates an appropriate number of breaks based on the frequency:
+   - Low: approximately 1 break per 5 minutes
+   - Medium: approximately 1 break per 3 minutes
+   - High: approximately 1 break per 2 minutes
+3. Ensures minimum spacing between breaks (at least 1 minute)
+4. Generates random offsets that are normalized to the available time
+5. Converts these normalized offsets to actual timestamps
+6. Returns an array of break timestamps
+
+## Core Implementation
+
+```javascript
+function generateRandomBreakTimes(periodMinutes, frequency) {
+  // Calculate period in seconds
+  const periodSeconds = periodMinutes * 60;
+  
+  // Determine number of breaks based on frequency setting
+  let numberOfBreaks;
+  switch(frequency) {
+    case "low": 
+      numberOfBreaks = Math.max(1, Math.floor(periodMinutes / 5));
+      break;
+    case "medium": 
+      numberOfBreaks = Math.max(2, Math.floor(periodMinutes / 3));
+      break;
+    case "high": 
+      numberOfBreaks = Math.max(3, Math.floor(periodMinutes / 2));
+      break;
+    default: 
+      numberOfBreaks = Math.max(2, Math.floor(periodMinutes / 3));
+  }
+  
+  // Generate random break times with minimum spacing
+  // Additional algorithm details in break-generator.js
+  
+  return breakTimes; // Array of timestamps for breaks
+}
+```
+
+## Integration with Timer
+
+The break generation algorithm integrates with the timer to:
+1. Generate break times when a session starts
+2. Schedule browser alarms for each break time
+3. Trigger notifications when break time is reached

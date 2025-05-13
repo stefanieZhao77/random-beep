@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Random Beep",
+  "version": "1.0.0",
+  "description": "A focus methodology extension with random short breaks and scheduled long breaks",
+  "permissions": [
+    "alarms",
+    "notifications",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["sounds/*.mp3", "sounds/*.wav"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
