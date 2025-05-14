@@ -6,9 +6,10 @@
  */
 
 import { loadSettings, saveSettings, getDefaultSettings, onSettingsChanged } from '../storage/settings.js';
-import { loadSessionState, onSessionChanged } from '../storage/session.js';
-import { initTimer, startSession, pauseSession, resumeSession, resetSession, handleAlarm } from './timer.js';
+import { loadSessionState, onSessionChanged, SessionState } from '../storage/session.js';
+import { initTimer, startSession, pauseSession, resumeSession, resetSession, handleAlarm, endShortBreak } from './timer.js';
 import { initNotificationClickHandler } from './notification.js';
+import { clearStatistics } from '../storage/statistics.js';
 
 // Register message listener at the top level to ensure service worker is always listening
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -17,6 +18,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true; // Keep the message channel open for async responses
 });
 
+// Keep track of short break watchdog timer
+let shortBreakWatchdogTimer = null;
 
 /**
  * Initialize the extension
@@ -57,7 +60,8 @@ async function initializeExtension() {
     });
   });
   
-  
+  // Start the short break watchdog to ensure breaks don't get stuck
+  startShortBreakWatchdog();
   
   // Listen for settings changes
   onSettingsChanged(handleSettingsChanged);
@@ -66,6 +70,44 @@ async function initializeExtension() {
   onSessionChanged(handleSessionChanged);
   
   console.log('Random Beep: Initialization complete');
+}
+
+/**
+ * Start a watchdog timer to detect and fix stuck short breaks
+ */
+function startShortBreakWatchdog() {
+  // Clear any existing watchdog
+  if (shortBreakWatchdogTimer) {
+    clearInterval(shortBreakWatchdogTimer);
+  }
+  
+  // Check every 30 seconds for stuck short breaks
+  shortBreakWatchdogTimer = setInterval(async () => {
+    try {
+      const session = await loadSessionState();
+      
+      // If session is in short break state, check how long it's been that way
+      if (session && session.state === SessionState.SHORT_BREAK && session.stateStartTime) {
+        const settings = await loadSettings();
+        const shortBreakDuration = settings.shortBreakDuration || 10; // Default to 10 seconds
+        const maxShortBreakTime = shortBreakDuration + 15; // Allow 15 seconds of leeway
+        
+        const now = Date.now();
+        const secondsInShortBreak = (now - session.stateStartTime) / 1000;
+        
+        // If break has been active for too long, force it to end
+        if (secondsInShortBreak > maxShortBreakTime) {
+          console.warn(`Watchdog detected stuck short break running for ${secondsInShortBreak.toFixed(1)}s ` +
+                      `(expected max: ${maxShortBreakTime}s). Forcing end of break.`);
+          await endShortBreak();
+        }
+      }
+    } catch (error) {
+      console.error('Error in short break watchdog:', error);
+    }
+  }, 30000);
+  
+  console.log('Short break watchdog started');
 }
 
 /**
@@ -171,6 +213,15 @@ function handleMessage(message, sender, sendResponse) {
         }).catch(err => {
           console.error('Error resetting settings:', err);
           try { sendResponse({error: 'Failed to reset settings'}); } catch (e) {}
+        });
+        return true;
+        
+      case 'clearStatistics':
+        clearStatistics().then(() => {
+          try { sendResponse({success: true}); } catch (e) { console.error(e); }
+        }).catch(err => {
+          console.error('Error clearing statistics:', err);
+          try { sendResponse({error: 'Failed to clear statistics'}); } catch (e) {}
         });
         return true;
         

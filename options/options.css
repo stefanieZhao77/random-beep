@@ -4,38 +4,7 @@
  * Styles for the Random Beep options page
  */
 
-:root {
-  --primary-color: #3F51B5;
-  --secondary-color: #FFC107;
-  --text-color: #333333;
-  --background-color: #FFFFFF;
-  --border-color: #E0E0E0;
-  --success-color: #4CAF50;
-  --warning-color: #FF9800;
-  --danger-color: #F44336;
-  --disabled-color: #9E9E9E;
-  --section-background: #F9F9F9;
-}
-
-/* Dark theme variables */
-.dark-theme {
-  --primary-color: #5C6BC0;
-  --secondary-color: #FFD54F;
-  --text-color: #F5F5F5;
-  --background-color: #212121;
-  --border-color: #424242;
-  --section-background: #2C2C2C;
-}
-
-/* Light theme variables */
-.light-theme {
-  --primary-color: #3F51B5;
-  --secondary-color: #FFC107;
-  --text-color: #212121;
-  --background-color: #F5F5F5;
-  --border-color: #E0E0E0;
-  --section-background: #FFFFFF;
-}
+@import url('../utils/common.css');
 
 * {
   box-sizing: border-box;

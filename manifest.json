@@ -6,7 +6,9 @@
   "permissions": [
     "alarms",
     "notifications",
-    "storage"
+    "storage",
+    "tts",
+    "offscreen"
   ],
   "background": {
     "service_worker": "background/background.js",
@@ -28,7 +30,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["sounds/*.mp3", "sounds/*.wav"],
+      "resources": ["sounds/*.mp3", "sounds/*.wav", "offscreen.html", "offscreen.js"],
       "matches": ["<all_urls>"]
     }
   ]

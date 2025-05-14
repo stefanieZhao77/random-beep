@@ -19,7 +19,9 @@ import {
 } from '../storage/session.js';
 import { 
   scheduleRandomBreaks, 
-  clearSessionAlarms 
+  clearSessionAlarms,
+  isShortBreakAlarm,
+  isLongBreakAlarm
 } from './break-generator.js';
 import { 
   NotificationType, 
@@ -193,16 +195,48 @@ async function startShortBreak() {
     
     // Schedule end of short break
     const settings = await loadSettings();
-    console.log(`Short break will end in ${settings.shortBreakDuration} seconds`);
+    const shortBreakDuration = settings.shortBreakDuration || 10; // Default to 10 seconds if not set
+    console.log(`Short break will end in ${shortBreakDuration} seconds`);
     
-    setTimeout(() => {
-      console.log('Short break ended, returning to active state');
-      endShortBreak();
-    }, settings.shortBreakDuration * 1000);
+    // Create a more reliable timeout with a reference we can check later
+    const shortBreakEndTime = Date.now() + (shortBreakDuration * 1000);
+    console.log(`Short break scheduled to end at: ${new Date(shortBreakEndTime).toLocaleTimeString()}`);
+    
+    const timeoutId = setTimeout(async () => {
+      console.log('Short break timeout fired');
+      try {
+        if (currentSession && currentSession.state === SessionState.SHORT_BREAK) {
+          console.log('Ending short break and returning to active state');
+          await endShortBreak();
+        } else {
+          console.log(`Short break not ended - current state: ${currentSession ? currentSession.state : 'no session'}`);
+        }
+      } catch (error) {
+        console.error('Error in short break timeout handler:', error);
+        // Force state back to active as a failsafe
+        if (currentSession) {
+          currentSession = updateSessionState(currentSession, SessionState.ACTIVE);
+          await saveSessionState(currentSession);
+        }
+      }
+    }, shortBreakDuration * 1000);
+    
+    // Add a fallback timeout as an extra safety measure
+    setTimeout(async () => {
+      if (currentSession && currentSession.state === SessionState.SHORT_BREAK) {
+        console.log('FAILSAFE: Short break did not end properly, forcing end');
+        await endShortBreak();
+      }
+    }, (shortBreakDuration + 5) * 1000);
     
     return currentSession;
   } catch (error) {
     console.error('Error starting short break:', error);
+    // If there was an error, make sure we don't get stuck in short break state
+    if (currentSession && currentSession.state === SessionState.SHORT_BREAK) {
+      currentSession = updateSessionState(currentSession, SessionState.ACTIVE);
+      await saveSessionState(currentSession);
+    }
     return currentSession;
   }
 }
@@ -212,17 +246,44 @@ async function startShortBreak() {
  * @returns {Promise<Object>} Promise that resolves with the updated session
  */
 async function endShortBreak() {
-  if (!currentSession || currentSession.state !== SessionState.SHORT_BREAK) {
+  console.log('Attempting to end short break...');
+  
+  if (!currentSession) {
+    console.warn('No current session when attempting to end short break');
+    return null;
+  }
+  
+  if (currentSession.state !== SessionState.SHORT_BREAK) {
+    console.warn(`Cannot end short break: session is in ${currentSession.state} state, not SHORT_BREAK`);
     return currentSession;
   }
   
-  // Update session state
-  currentSession = updateSessionState(currentSession, SessionState.ACTIVE);
-  
-  // Save session state
-  await saveSessionState(currentSession);
-  
-  return currentSession;
+  try {
+    console.log('Transitioning from short break to active state');
+    
+    // Update session state
+    currentSession = updateSessionState(currentSession, SessionState.ACTIVE);
+    
+    // Save session state
+    await saveSessionState(currentSession);
+    
+    console.log('Short break ended successfully, now in active state');
+    
+    return currentSession;
+  } catch (error) {
+    console.error('Error ending short break:', error);
+    
+    // Attempt recovery - force to active state
+    try {
+      currentSession = updateSessionState(currentSession, SessionState.ACTIVE);
+      await saveSessionState(currentSession);
+      console.log('Recovered from error and set session to active state');
+    } catch (secondError) {
+      console.error('Critical error: Could not recover from short break:', secondError);
+    }
+    
+    return currentSession;
+  }
 }
 
 /**
@@ -359,37 +420,37 @@ async function handleAlarm(alarm) {
       return;
     }
     
-    // Get current session info
-    console.log('Current session state:', currentSession.state, 'ID:', currentSession.id);
+    // Check if this alarm belongs to current session
+    if (!alarm.name.startsWith(currentSession.id)) {
+      console.log(`Alarm ${alarm.name} belongs to a different session, ignoring`);
+      return;
+    }
     
-    // For active state, we handle breaks normally
-    if (currentSession.state === SessionState.ACTIVE) {
-      // Check if this alarm belongs to the current session
-      if (!alarm.name.startsWith(currentSession.id)) {
-        console.log('Ignoring alarm for different session');
-        return;
-      }
-      
-      // Handle short break alarm
-      if (alarm.name.includes('_short_break_')) {
-        console.log('Starting short break from alarm...');
-        await startShortBreak();
-      }
-      
-      // Handle long break alarm
-      if (alarm.name.includes('_long_break')) {
-        console.log('Starting long break from alarm...');
-        await startLongBreak();
-      }
-    } 
-    // For paused state, we log but don't take action
-    else if (currentSession.state === SessionState.PAUSED) {
-      console.log('Session is paused, noting but not processing alarm:', alarm.name);
+    // Get current session state
+    const sessionState = currentSession.state;
+    console.log(`Current session state when alarm triggered: ${sessionState}`);
+    
+    // Only handle alarms when session is active
+    if (sessionState !== SessionState.ACTIVE) {
+      console.log(`Session is not active (${sessionState}), ignoring alarm`);
+      return;
     }
-    // For other states, we just log the alarm
-    else {
-      console.log('Alarm received during', currentSession.state, 'state, not processing:', alarm.name);
+    
+    // Handle short break alarm
+    if (isShortBreakAlarm(alarm.name)) {
+      console.log(`Starting random short break from alarm: ${alarm.name}`);
+      await startShortBreak();
+      return;
     }
+    
+    // Handle long break alarm
+    if (isLongBreakAlarm(alarm.name)) {
+      console.log(`Starting scheduled long break from alarm: ${alarm.name}`);
+      await startLongBreak();
+      return;
+    }
+    
+    console.log(`Unknown alarm type: ${alarm.name}, ignoring`);
   } catch (error) {
     console.error('Error handling alarm:', error);
   }

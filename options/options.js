@@ -332,11 +332,123 @@ function showSuccessMessage(message) {
  * @param {string} soundFile - The filename of the sound to play
  */
 function previewSound(soundFile) {
-  if (!soundFile) return;
-  const audio = new Audio(`../sounds/${soundFile}`);
-  audio.play().catch(error => {
-    console.error('Error playing preview sound:', error);
-  });
+  if (!soundFile) {
+    console.error('No sound file specified for preview');
+    return;
+  }
+  
+  console.log(`Previewing sound: ${soundFile}`);
+  
+  // Method 1: Using standard Audio API
+  try {
+    const soundUrl = chrome.runtime.getURL(`sounds/${soundFile}`);
+    console.log(`Playing sound from URL: ${soundUrl}`);
+    
+    const audio = new Audio(soundUrl);
+    audio.volume = 1.0;
+    
+    // Add feedback when playback starts
+    audio.onplay = () => {
+      console.log('Sound preview started');
+      showSuccessMessage('Playing sound...');
+    };
+    
+    // Add error handling
+    audio.onerror = (err) => {
+      console.error('Error playing sound:', err);
+      showErrorMessage('Could not play sound. Check console for details.');
+      
+      // Try fallback method
+      previewSoundWithWebAudio(soundFile);
+    };
+    
+    // Play the sound
+    audio.play().catch(error => {
+      console.error('Error with audio playback:', error);
+      // Try fallback method on error
+      previewSoundWithWebAudio(soundFile);
+    });
+  } catch (error) {
+    console.error('Error setting up audio playback:', error);
+    previewSoundWithWebAudio(soundFile);
+  }
+}
+
+/**
+ * Preview a sound using Web Audio API (fallback method)
+ * @param {string} soundFile - The filename of the sound to play
+ */
+function previewSoundWithWebAudio(soundFile) {
+  try {
+    const soundUrl = chrome.runtime.getURL(`sounds/${soundFile}`);
+    console.log(`Trying Web Audio API for sound: ${soundUrl}`);
+    
+    fetch(soundUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch sound file: ${response.status} ${response.statusText}`);
+        }
+        return response.arrayBuffer();
+      })
+      .then(arrayBuffer => {
+        // Create audio context
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+        
+        // Return a promise for the decoded data
+        return audioContext.decodeAudioData(arrayBuffer);
+      })
+      .then(audioBuffer => {
+        // Create and play source
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+        
+        console.log('Sound preview started with Web Audio API');
+        showSuccessMessage('Playing sound...');
+      })
+      .catch(error => {
+        console.error('Web Audio API playback failed:', error);
+        showErrorMessage('Could not play sound with any method');
+      });
+  } catch (error) {
+    console.error('Error with Web Audio API setup:', error);
+    showErrorMessage('Could not play sound');
+  }
+}
+
+/**
+ * Show an error message
+ * @param {string} message - Message to show
+ */
+function showErrorMessage(message) {
+  // Remove any existing message
+  const existingMessage = document.querySelector('.error-message');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+  
+  // Create new message
+  const messageElement = document.createElement('div');
+  messageElement.className = 'error-message';
+  messageElement.textContent = message;
+  document.body.appendChild(messageElement);
+  
+  // Show message
+  setTimeout(() => {
+    messageElement.classList.add('show');
+  }, 10);
+  
+  // Hide and remove message after delay
+  setTimeout(() => {
+    messageElement.classList.remove('show');
+    setTimeout(() => {
+      messageElement.remove();
+    }, 300);
+  }, 3000);
 }
 
 // Initialize options page when DOM is loaded

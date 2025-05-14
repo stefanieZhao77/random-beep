@@ -360,9 +360,48 @@ function confirmClearStatistics() {
  * Clear all statistics data
  */
 function clearStatistics() {
-  chrome.runtime.sendMessage({ action: 'clearStatistics' }, () => {
-    statisticsData = { dailyFocus: {}, weeklyFocus: {} };
-    updateStatisticsDisplay();
+  chrome.runtime.sendMessage({ action: 'clearStatistics' }, (response) => {
+    console.log('Clear statistics response:', response);
+    
+    if (response && response.success) {
+      // Update local data
+      statisticsData = { dailyFocus: {}, weeklyFocus: {} };
+      
+      // Refresh charts and statistics display
+      updateStatisticsDisplay();
+      
+      // Show success message
+      const successMessage = document.createElement('div');
+      successMessage.className = 'success-message';
+      successMessage.textContent = 'Statistics cleared successfully!';
+      document.body.appendChild(successMessage);
+      
+      // Fade out after 3 seconds
+      setTimeout(() => {
+        successMessage.classList.add('fade-out');
+        setTimeout(() => {
+          if (document.body.contains(successMessage)) {
+            document.body.removeChild(successMessage);
+          }
+        }, 1000);
+      }, 3000);
+    } else {
+      // Show error message
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'error-message';
+      errorMessage.textContent = 'Failed to clear statistics. Please try again.';
+      document.body.appendChild(errorMessage);
+      
+      // Fade out after 3 seconds
+      setTimeout(() => {
+        errorMessage.classList.add('fade-out');
+        setTimeout(() => {
+          if (document.body.contains(errorMessage)) {
+            document.body.removeChild(errorMessage);
+          }
+        }, 1000);
+      }, 3000);
+    }
   });
 }
 

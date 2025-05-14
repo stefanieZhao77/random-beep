@@ -90,7 +90,32 @@ async function scheduleRandomBreaks(sessionId, sessionStartTime) {
   
   // Generate break times based on session start time
   const startTime = sessionStartTime || Date.now();
-  const breakTimes = generateRandomBreakTimes(settings.shortPeriodDuration, startTime);
+  
+  // Ensure we use a valid short period duration (minimum 1 minute)
+  const shortPeriodDuration = Math.max(1, settings.shortPeriodDuration || 5);
+  
+  // Calculate how many short periods fit within the long period duration
+  const longPeriodDuration = settings.longPeriodDuration || 90;
+  const numberOfShortPeriods = Math.floor(longPeriodDuration / shortPeriodDuration);
+  
+  console.log(`Scheduling breaks for ${numberOfShortPeriods} short periods of ${shortPeriodDuration} minutes each`);
+  
+  // Generate and schedule breaks for each short period
+  let allBreakTimes = [];
+  
+  for (let periodIndex = 0; periodIndex < numberOfShortPeriods; periodIndex++) {
+    // Calculate the start time for this period
+    const periodStartTime = startTime + (periodIndex * shortPeriodDuration * 60 * 1000);
+    
+    // Generate breaks for this period
+    const periodBreakTimes = generateRandomBreakTimes(shortPeriodDuration, periodStartTime);
+    
+    // Add to the aggregate list
+    allBreakTimes = allBreakTimes.concat(periodBreakTimes);
+  }
+  
+  // Sort all break times chronologically
+  allBreakTimes.sort((a, b) => a - b);
   
   // Debug: List all alarms after clearing
   chrome.alarms.getAll(alarms => {
@@ -98,18 +123,18 @@ async function scheduleRandomBreaks(sessionId, sessionStartTime) {
   });
   
   // Schedule each break as an alarm
-  console.log(`Scheduling ${breakTimes.length} short breaks for session ${sessionId}`);
+  console.log(`Scheduling ${allBreakTimes.length} short breaks for session ${sessionId}`);
   
-  for (let i = 0; i < breakTimes.length; i++) {
+  for (let i = 0; i < allBreakTimes.length; i++) {
     const alarmName = `${sessionId}_short_break_${i}`;
-    const scheduledTime = new Date(breakTimes[i]);
+    const scheduledTime = new Date(allBreakTimes[i]);
     
     console.log(`Short break #${i+1}: scheduling for ${scheduledTime.toLocaleTimeString()}`);
     
     try {
       // Create alarm with exact time
       chrome.alarms.create(alarmName, {
-        when: breakTimes[i]
+        when: allBreakTimes[i]
       });
       
       // Verify alarm was created
@@ -160,7 +185,7 @@ async function scheduleRandomBreaks(sessionId, sessionStartTime) {
     });
   }, 1000);
   
-  return breakTimes;
+  return allBreakTimes;
 }
 
 /**

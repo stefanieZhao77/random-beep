@@ -301,25 +301,26 @@ function updateBreakInfo() {
 
   // Short break info
   if (currentSession.state === 'active') {
-    // Generate a consistent estimated break time for this session
+    // Calculate next short break time based on settings.shortPeriodDuration
+    // For random breaks, show an estimated time
     if (estimatedShortBreakMinute === null) {
       // Only calculate once per session, between 20% and 80% of the period
       estimatedShortBreakMinute = Math.round(settings.shortPeriodDuration * (0.2 + Math.random() * 0.6));
     }
     // Use consistent format with prefix
-    shortBreakTimeElement.textContent = `${estimatedShortBreakMinute} mins`;
+    shortBreakTimeElement.textContent = `~${estimatedShortBreakMinute} mins (random)`;
   } else if (currentSession.state === 'shortBreak') {
     try {
       const now = Date.now();
       const elapsed = (now - currentSession.stateStartTime) / 1000;
       const remaining = Math.max(0, Math.ceil(settings.shortBreakDuration - elapsed));
-      shortBreakTimeElement.textContent = `Short break: ${remaining}s remaining`;
+      shortBreakTimeElement.textContent = `${remaining}s remaining`;
     } catch (error) {
       console.error('Error updating short break info:', error);
-      shortBreakTimeElement.textContent = 'Short break: ending...';
+      shortBreakTimeElement.textContent = 'ending...';
     }
   } else if (currentSession.state === 'paused') {
-    shortBreakTimeElement.textContent = 'Short break: paused';
+    shortBreakTimeElement.textContent = `~paused (random)`;
   } else {
     shortBreakTimeElement.textContent = 'N/A';
     estimatedShortBreakMinute = null; // Reset when idle or other states
@@ -368,7 +369,7 @@ function updateBreakInfo() {
  */
 function updateControlButtons() {
   if (!currentSession) {
-    startButton.textContent = '▶️ Start';
+    startButton.querySelector('span:last-child').textContent = 'Start';
     startButton.disabled = false;
     pauseButton.disabled = true;
     resetButton.disabled = true;
@@ -377,35 +378,35 @@ function updateControlButtons() {
   
   switch (currentSession.state) {
     case 'idle':
-      startButton.textContent = '▶️ Start';
+      startButton.querySelector('span:last-child').textContent = 'Start';
       startButton.disabled = false;
       pauseButton.disabled = true;
       resetButton.disabled = true;
       break;
       
     case 'active':
-      startButton.textContent = '▶️ Start';
+      startButton.querySelector('span:last-child').textContent = 'Start';
       startButton.disabled = true;
       pauseButton.disabled = false;
       resetButton.disabled = false;
       break;
       
     case 'paused':
-      startButton.textContent = '▶️ Resume';
+      startButton.querySelector('span:last-child').textContent = 'Resume';
       startButton.disabled = false;
       pauseButton.disabled = true;
       resetButton.disabled = false;
       break;
       
     case 'shortBreak':
-      startButton.textContent = '▶️ Start';
+      startButton.querySelector('span:last-child').textContent = 'Start';
       startButton.disabled = true;
       pauseButton.disabled = true;
       resetButton.disabled = false;
       break;
       
     case 'longBreak':
-      startButton.textContent = '▶️ Start New';
+      startButton.querySelector('span:last-child').textContent = 'Start New';
       startButton.disabled = false;
       pauseButton.disabled = true;
       resetButton.disabled = false;
