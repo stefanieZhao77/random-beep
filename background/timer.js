@@ -35,6 +35,8 @@ const TIMER_UPDATE_INTERVAL = 1000;
 // Timer state
 let timerInterval = null;
 let currentSession = null;
+// Store long break end timeout
+let longBreakEndTimeout = null;
 
 /**
  * Initialize the timer module
@@ -74,7 +76,15 @@ async function startSession() {
     
     // Clear any previous alarms
     if (currentSession && currentSession.id) {
+      console.log(`Clearing all alarms for session ${currentSession.id}`);
       await clearSessionAlarms(currentSession.id);
+    }
+    
+    // Clear any lingering timeouts
+    if (longBreakEndTimeout) {
+      console.log('Clearing lingering long break timeout');
+      clearTimeout(longBreakEndTimeout);
+      longBreakEndTimeout = null;
     }
     
     // Create a new session
@@ -264,6 +274,9 @@ async function endShortBreak() {
     // Update session state
     currentSession = updateSessionState(currentSession, SessionState.ACTIVE);
     
+    // Show notification that short break has ended
+    await showNotification(NotificationType.SHORT_BREAK_END);
+    
     // Save session state
     await saveSessionState(currentSession);
     
@@ -295,6 +308,8 @@ async function startLongBreak() {
     return null;
   }
   
+  console.log('Starting long break...');
+  
   // Stop timer updates
   stopTimerUpdates();
   
@@ -310,11 +325,47 @@ async function startLongBreak() {
   // Save session state
   await saveSessionState(currentSession);
   
+  // Clear any existing timeout to prevent multiple timers
+  if (longBreakEndTimeout) {
+    clearTimeout(longBreakEndTimeout);
+    longBreakEndTimeout = null;
+  }
+  
   // Schedule end of long break
   const settings = await loadSettings();
-  setTimeout(() => {
-    endLongBreak();
-  }, settings.longBreakDuration * 60 * 1000);
+  const longBreakDurationMs = settings.longBreakDuration * 60 * 1000;
+  
+  console.log(`Long break scheduled to end in ${settings.longBreakDuration} minutes (${longBreakDurationMs}ms) at ${new Date(Date.now() + longBreakDurationMs).toLocaleTimeString()}`);
+  
+  longBreakEndTimeout = setTimeout(async () => {
+    console.log('Long break timeout fired, ending long break');
+    try {
+      if (currentSession && currentSession.state === SessionState.LONG_BREAK) {
+        await endLongBreak();
+      } else {
+        console.log(`Long break not ended - current state: ${currentSession ? currentSession.state : 'no session'}`);
+      }
+    } catch (error) {
+      console.error('Error in long break timeout handler:', error);
+      // Force session reset as a failsafe
+      currentSession = createNewSession();
+      await saveSessionState(currentSession);
+    }
+  }, longBreakDurationMs);
+  
+  // Add a failsafe timeout in case the primary one fails
+  setTimeout(async () => {
+    if (currentSession && currentSession.state === SessionState.LONG_BREAK) {
+      console.log('FAILSAFE: Long break did not end properly, forcing end');
+      try {
+        // Force a complete reset of the session
+        currentSession = createNewSession();
+        await saveSessionState(currentSession);
+      } catch (error) {
+        console.error('Error in long break failsafe:', error);
+      }
+    }
+  }, longBreakDurationMs + 10000); // 10 seconds after scheduled end
   
   return currentSession;
 }
@@ -328,14 +379,61 @@ async function endLongBreak() {
     return currentSession;
   }
   
-  const settings = await loadSettings();
+  console.log('Ending long break...');
   
-  // If auto-start next session is enabled, start a new session
+  // Stop timer updates immediately to prevent any counting issues
+  stopTimerUpdates();
+  
+  // Clear any scheduled alarms to prevent unexpected breaks
+  if (currentSession && currentSession.id) {
+    console.log(`Clearing all alarms for session ${currentSession.id}`);
+    await clearSessionAlarms(currentSession.id);
+  }
+  
+  // Clear any lingering timeouts
+  if (longBreakEndTimeout) {
+    clearTimeout(longBreakEndTimeout);
+    longBreakEndTimeout = null;
+  }
+  
+  // Force reset to idle state to ensure timer is completely reset
+  console.log('Creating new idle session to completely reset timer');
+  currentSession = createNewSession();
+  
+  // Save session state before potentially starting a new session
+  await saveSessionState(currentSession);
+  
+  console.log('Long break ended, session completely reset to idle state');
+  
+  // Show notification that long break has ended
+  await showNotification(NotificationType.LONG_BREAK, {
+    title: 'Long Break Finished',
+    message: 'Your long break is over. Ready to start a new session?'
+  });
+  
+  // If auto-start is enabled, start a new session
+  const settings = await loadSettings();
   if (settings.autoStartNextSession) {
+    console.log('Auto-start is enabled, starting new session');
     return startSession();
   } else {
-    // Otherwise, reset to idle state
-    return resetSession();
+    console.log('Auto-start is disabled, remaining in idle state');
+    
+    // Double-check that we're truly reset
+    if (timerInterval) {
+      console.log('FAILSAFE: Timer interval still running, stopping it');
+      stopTimerUpdates();
+    }
+    
+    // Reload the session state to verify it's properly reset
+    try {
+      const savedSession = await loadSessionState();
+      console.log('Verified session state after long break end:', savedSession);
+    } catch (error) {
+      console.error('Error verifying session state:', error);
+    }
+    
+    return currentSession;
   }
 }
 

@@ -10,6 +10,7 @@
     "tts",
     "offscreen"
   ],
+  "host_permissions": [],
   "background": {
     "service_worker": "background/background.js",
     "type": "module"
@@ -30,7 +31,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["sounds/*.mp3", "sounds/*.wav", "offscreen.html", "offscreen.js"],
+      "resources": ["sounds/*.mp3", "sounds/*.wav", "offscreen.html", "offscreen.js", "icons/*.png"],
       "matches": ["<all_urls>"]
     }
   ]

@@ -200,6 +200,38 @@ async function saveSettings() {
     theme: getRadioValue(themeRadios),
   };
 
+  // Validate inputs before saving
+  let validationError = false;
+  
+  // Validate shortPeriodDuration (1-60 minutes)
+  if (isNaN(newSettings.shortPeriodDuration) || newSettings.shortPeriodDuration < 1 || newSettings.shortPeriodDuration > 60) {
+    showErrorMessage('Short period duration must be between 1-60 minutes');
+    validationError = true;
+  }
+  
+  // Validate shortBreakDuration (5-60 seconds)
+  if (isNaN(newSettings.shortBreakDuration) || newSettings.shortBreakDuration < 5 || newSettings.shortBreakDuration > 60) {
+    showErrorMessage('Short break duration must be between 5-60 seconds');
+    validationError = true;
+  }
+  
+  // Validate longPeriodDuration (15-240 minutes)
+  if (isNaN(newSettings.longPeriodDuration) || newSettings.longPeriodDuration < 15 || newSettings.longPeriodDuration > 240) {
+    showErrorMessage('Long period duration must be between 15-240 minutes');
+    validationError = true;
+  }
+  
+  // Validate longBreakDuration (1-60 minutes)
+  if (isNaN(newSettings.longBreakDuration) || newSettings.longBreakDuration < 1 || newSettings.longBreakDuration > 60) {
+    showErrorMessage('Long break duration must be between 1-60 minutes');
+    validationError = true;
+  }
+  
+  // If validation failed, don't save
+  if (validationError) {
+    return;
+  }
+
   // Add custom theme colors if custom theme is selected
   if (newSettings.theme === 'custom') {
     newSettings.customTheme = {
@@ -209,15 +241,22 @@ async function saveSettings() {
   }
 
   // Save settings
-  chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, () => {
-    saveButton.disabled = true;
-    showSuccessMessage('Settings saved successfully!');
-    
-    // Notify background script of settings change
-    chrome.runtime.sendMessage({ 
-      action: 'settingsChanged', 
-      settings: newSettings 
-    });
+  chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, (response) => {
+    if (response && response.error) {
+      showErrorMessage(`Failed to save settings: ${response.error}`);
+    } else {
+      saveButton.disabled = true;
+      showSuccessMessage('Settings saved successfully!');
+      
+      // Keep track of current settings
+      currentSettings = response && response.settings ? response.settings : newSettings;
+      
+      // Notify background script of settings change
+      chrome.runtime.sendMessage({ 
+        action: 'settingsChanged', 
+        settings: newSettings 
+      });
+    }
   });
 }
 
@@ -434,7 +473,13 @@ function showErrorMessage(message) {
   // Create new message
   const messageElement = document.createElement('div');
   messageElement.className = 'error-message';
-  messageElement.textContent = message;
+  
+  // Add warning icon and message
+  messageElement.innerHTML = `
+    <span class="error-icon">⚠️</span>
+    <span class="error-text">${message}</span>
+  `;
+  
   document.body.appendChild(messageElement);
   
   // Show message

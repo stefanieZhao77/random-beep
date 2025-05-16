@@ -18,6 +18,7 @@ const OFFSCREEN_REASON = 'AUDIO_PLAYBACK';
  */
 const NotificationType = {
   SHORT_BREAK: 'shortBreak',
+  SHORT_BREAK_END: 'shortBreakEnd',
   LONG_BREAK: 'longBreak',
   SESSION_COMPLETE: 'sessionComplete'
 };
@@ -44,6 +45,9 @@ const AVAILABLE_SOUNDS = [
   "mixkit-software-interface-start-2574.wav",
   "mixkit-tile-game-reveal-960.wav"
 ];
+
+// Store notification click handler
+let notificationClickCallback = null;
 
 /**
  * Check if the specified sound file is available
@@ -131,6 +135,46 @@ async function createOffscreenDocument() {
 }
 
 /**
+ * Initialize notification system
+ */
+async function initNotifications() {
+  try {
+    // Set up notification click listener
+    if (chrome.notifications) {
+      console.log('Chrome Notifications API available');
+      
+      // Set up click handler for notifications
+      chrome.notifications.onClicked.addListener((notificationId) => {
+        console.log('Notification clicked', notificationId);
+        
+        // Call the registered callback if available
+        if (notificationClickCallback) {
+          notificationClickCallback(notificationId);
+        }
+      });
+      
+      // Set up button click handler
+      chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+        console.log('Notification button clicked', notificationId, buttonIndex);
+        
+        // Call the registered callback if available
+        if (notificationClickCallback) {
+          notificationClickCallback(notificationId, buttonIndex);
+        }
+      });
+      
+      return true;
+    } else {
+      console.error('Chrome Notifications API not available');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error initializing notifications:', error);
+    return false;
+  }
+}
+
+/**
  * Create and show a notification
  * @param {string} type - Notification type
  * @param {Object} options - Additional notification options
@@ -146,22 +190,27 @@ async function showNotification(type, options = {}) {
     case NotificationType.SHORT_BREAK:
       title = 'Time for a Short Break!';
       message = `Take a ${settings.shortBreakDuration} second break to rest your eyes and mind.`;
-      iconUrl = '../icons/128.png';
+      iconUrl = 'icons/128.png';
+      break;
+    case NotificationType.SHORT_BREAK_END:
+      title = 'Short Break Finished';
+      message = 'Your short break is over. Back to focus mode!';
+      iconUrl = 'icons/128.png';
       break;
     case NotificationType.LONG_BREAK:
       title = 'Time for a Long Break!';
       message = `Take a ${settings.longBreakDuration} minute break to recharge.`;
-      iconUrl = '../icons/128.png';
+      iconUrl = 'icons/128.png';
       break;
     case NotificationType.SESSION_COMPLETE:
       title = 'Focus Session Complete';
       message = 'Great job! You\'ve completed your focus session.';
-      iconUrl = '../icons/128.png';
+      iconUrl = 'icons/128.png';
       break;
     default:
       title = 'Random Beep';
       message = 'Notification from Random Beep';
-      iconUrl = '../icons/128.png';
+      iconUrl = 'icons/128.png';
   }
   
   // Override defaults with provided options
@@ -169,18 +218,46 @@ async function showNotification(type, options = {}) {
   message = options.message || message;
   iconUrl = options.iconUrl || iconUrl;
   
+  console.log(`Showing notification: ${title} - ${message}`);
+  
   // Create notification and play sound in parallel
   const notificationPromise = new Promise((resolve) => {
-    chrome.notifications.create({
-      type: 'basic',
-      title,
-      message,
-      iconUrl,
-      requireInteraction: type === NotificationType.LONG_BREAK,
-      silent: true // We handle sounds separately for better control
-    }, (notificationId) => {
-      resolve(notificationId);
-    });
+    try {
+      // Check if Chrome Notifications API is available
+      if (!chrome.notifications) {
+        console.error('Chrome Notifications API not available');
+        resolve(null);
+        return;
+      }
+      
+      // Create the notification
+      const notificationId = type + '-' + Date.now();
+      chrome.alarms.onAlarm.addListener(() => {
+        chrome.action.setBadgeText({ text: '' });
+        chrome.notifications.create(notificationId, {
+        type: 'basic',
+        title: title,
+        message: message,
+        iconUrl: chrome.runtime.getURL(iconUrl),
+        priority: type === NotificationType.LONG_BREAK ? 2 : 0, // High priority for long breaks
+        requireInteraction: type === NotificationType.LONG_BREAK, // Keep long break notifications visible
+        buttons: type === NotificationType.LONG_BREAK ? [{ title: 'End Break' }] : []
+      }, (createdId) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error creating notification:', chrome.runtime.lastError);
+          resolve(null);
+        } else {
+          console.log(`Notification created with ID: ${createdId}`);
+          resolve(createdId);
+        }
+      });
+      });
+      
+      
+    } catch (error) {
+      console.error('Exception while creating notification:', error);
+      resolve(null);
+    }
   });
   
   // Play sound if enabled
@@ -206,6 +283,9 @@ async function playNotificationSound(type, settings) {
   switch (type) {
     case NotificationType.SHORT_BREAK:
       soundFile = settings.shortBreakSound || "mixkit-message-pop-alert-2354.mp3";
+      break;
+    case NotificationType.SHORT_BREAK_END:
+      soundFile = settings.shortBreakSound || "mixkit-software-interface-back-2575.wav";
       break;
     case NotificationType.LONG_BREAK:
       soundFile = settings.longBreakSound || "mixkit-correct-answer-tone-2870.wav";
@@ -250,39 +330,6 @@ async function playNotificationSound(type, settings) {
   } catch (error) {
     console.error('Error using TTS fallback:', error);
   }
-  
-  // Final fallback: create a notification with system sound
-  console.log('Using system notification sound as final fallback');
-  createSystemSoundNotification(type, settings);
-}
-
-/**
- * Create a notification that uses the system's notification sound
- * @param {string} type - Notification type
- * @param {Object} settings - Settings object
- */
-function createSystemSoundNotification(type, settings) {
-  let title, message;
-  if (type === NotificationType.SHORT_BREAK) {
-    title = 'Short Break Sound Alert';
-    message = `Take a ${settings.shortBreakDuration} second break.`;
-  } else if (type === NotificationType.LONG_BREAK) {
-    title = 'Long Break Sound Alert';
-    message = `Take a ${settings.longBreakDuration} minute break.`;
-  } else {
-    title = 'Sound Alert';
-    message = 'Notification alert';
-  }
-
-  // Create notification with system sound
-  chrome.notifications.create(`sound-notif-${Date.now()}`, {
-    type: 'basic',
-    title: title,
-    message: message,
-    iconUrl: '../icons/128.png',
-    silent: false, // This will use the system sound
-    priority: 2
-  });
 }
 
 /**
@@ -290,34 +337,35 @@ function createSystemSoundNotification(type, settings) {
  * @param {Function} callback - Function to call when notification is clicked
  */
 function initNotificationClickHandler(callback) {
-  chrome.notifications.onClicked.addListener((notificationId) => {
-    // Close the notification
-    chrome.notifications.clear(notificationId);
-    
-    // Call the provided callback with the notification ID
-    if (typeof callback === 'function') {
-      callback(notificationId);
-    }
-  });
+  notificationClickCallback = callback;
 }
 
 /**
- * Close the offscreen document if it exists
+ * Close the offscreen document
+ * @returns {Promise<boolean>} True if document was closed successfully
  */
 async function closeOffscreenDocument() {
-  if (chrome.offscreen && await hasOffscreenDocument()) {
-    try {
+  if (!chrome.offscreen) {
+    return false;
+  }
+  
+  try {
+    if (await hasOffscreenDocument()) {
       await chrome.offscreen.closeDocument();
-      console.log('Closed offscreen document');
-    } catch (error) {
-      console.error('Error closing offscreen document:', error);
+      console.log('Offscreen document closed');
+      return true;
     }
+    return false;
+  } catch (error) {
+    console.error('Error closing offscreen document:', error);
+    return false;
   }
 }
 
 // Export the module's public API
 export {
   NotificationType,
+  initNotifications,
   showNotification,
   initNotificationClickHandler,
   closeOffscreenDocument

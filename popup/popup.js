@@ -174,6 +174,23 @@ function startUpdateInterval() {
         currentSession.state === 'active' || 
         currentSession.state === 'shortBreak' || 
         currentSession.state === 'longBreak')) {
+      
+      // Check if a long break has completed
+      if (currentSession.state === 'longBreak' && settings) {
+        const now = Date.now();
+        const elapsed = (now - currentSession.stateStartTime) / 1000;
+        const totalBreakTime = settings.longBreakDuration * 60;
+        
+        // If the long break duration has elapsed, reset the session display to idle state
+        if (elapsed >= totalBreakTime) {
+          console.log('Long break duration elapsed in UI, resetting to idle state');
+          // Reset the UI to show idle state
+          currentSession = null;
+          updateUI();
+          return;
+        }
+      }
+      
       updateTimeDisplay();
       updateProgressBar();
       updateBreakInfo();
@@ -227,8 +244,15 @@ function updateTimeDisplay() {
       const now = Date.now();
       if (currentSession.stateStartTime && settings) {
         const elapsed = (now - currentSession.stateStartTime) / 1000;
-        const remaining = Math.max(0, settings.longBreakDuration * 60 - elapsed);
-        displayTime = remaining;
+        const totalBreakTime = settings.longBreakDuration * 60;
+        
+        // If the break has completed, show zero time
+        if (elapsed >= totalBreakTime) {
+          displayTime = 0;
+        } else {
+          const remaining = Math.max(0, totalBreakTime - elapsed);
+          displayTime = remaining;
+        }
       } else {
         // Fallback if data is missing
         displayTime = settings ? settings.longBreakDuration * 60 : 20 * 60;
@@ -278,7 +302,14 @@ function updateProgressBar() {
       const now = Date.now();
       const elapsed = (now - currentSession.stateStartTime) / 1000;
       const totalBreakTime = settings.longBreakDuration * 60; // in seconds
-      progress = Math.min(100, (elapsed / totalBreakTime) * 100);
+      
+      // If the break time has elapsed but the session hasn't been reset yet,
+      // show 100% progress to indicate completion
+      if (elapsed >= totalBreakTime) {
+        progress = 100;
+      } else {
+        progress = Math.min(100, (elapsed / totalBreakTime) * 100);
+      }
     }
   } catch (error) {
     console.error('Error updating progress bar:', error);
@@ -352,7 +383,13 @@ function updateBreakInfo() {
         const elapsed = (now - currentSession.stateStartTime) / 1000;
         const totalBreakTime = settings.longBreakDuration * 60;
         const remaining = Math.max(0, totalBreakTime - elapsed);
-        longBreakTimeElement.textContent = `${formatDuration(remaining)} remaining`;
+        
+        // If no time remaining, show 'Complete' instead of '0s remaining'
+        if (remaining <= 0) {
+          longBreakTimeElement.textContent = 'Complete';
+        } else {
+          longBreakTimeElement.textContent = `${formatDuration(remaining)} remaining`;
+        }
       } catch (error) {
         console.error('Error updating long break info for long break:', error);
         longBreakTimeElement.textContent = 'ending...';
@@ -496,7 +533,9 @@ function handleMessage(message) {
 }
 
 // Initialize popup when DOM is loaded
-document.addEventListener('DOMContentLoaded', initPopup);
+document.addEventListener('DOMContentLoaded', () => {
+  initPopup();
+});
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener(handleMessage);

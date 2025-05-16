@@ -6,9 +6,9 @@
  */
 
 import { loadSettings, saveSettings, getDefaultSettings, onSettingsChanged } from '../storage/settings.js';
-import { loadSessionState, onSessionChanged, SessionState } from '../storage/session.js';
-import { initTimer, startSession, pauseSession, resumeSession, resetSession, handleAlarm, endShortBreak } from './timer.js';
-import { initNotificationClickHandler } from './notification.js';
+import { loadSessionState, onSessionChanged, SessionState, updateSessionState } from '../storage/session.js';
+import { initTimer, startSession, pauseSession, resumeSession, resetSession, handleAlarm, endShortBreak, endLongBreak } from './timer.js';
+import { initNotificationClickHandler, initNotifications, showNotification, NotificationType } from './notification.js';
 import { clearStatistics } from '../storage/statistics.js';
 
 // Register message listener at the top level to ensure service worker is always listening
@@ -29,6 +29,9 @@ async function initializeExtension() {
   
   // Initialize timer
   await initTimer();
+  
+  // Initialize notifications
+  await initNotifications();
   
   // Initialize notification click handler
   initNotificationClickHandler(handleNotificationClick);
@@ -190,7 +193,7 @@ function handleMessage(message, sender, sendResponse) {
           try { sendResponse({error: 'Failed to reset session'}); } catch (e) {}
         });
         return true;
-        
+      
       case 'saveSettings':
         if (message.settings) {
           saveSettings(message.settings).then(savedSettings => {
@@ -231,7 +234,7 @@ function handleMessage(message, sender, sendResponse) {
     }
   } catch (err) {
     console.error('Error in message handler:', err);
-    try { sendResponse({error: 'Internal error'}); } catch (e) {}
+    try { sendResponse({error: 'Internal error: ' + err.message}); } catch (e) {}
     return false;
   }
 }
@@ -239,11 +242,19 @@ function handleMessage(message, sender, sendResponse) {
 /**
  * Handle notification clicks
  * @param {string} notificationId - ID of the clicked notification
+ * @param {number} buttonIndex - Index of the clicked button (if any)
  */
-function handleNotificationClick(notificationId) {
-  console.log('Random Beep: Notification clicked', notificationId);
+function handleNotificationClick(notificationId, buttonIndex) {
+  console.log('Random Beep: Notification clicked', notificationId, buttonIndex !== undefined ? `button: ${buttonIndex}` : '');
   
-  // Open the popup when notification is clicked
+  // Handle long break end button click
+  if (buttonIndex === 0 && notificationId.includes(NotificationType.LONG_BREAK)) {
+    console.log('Long break end button clicked, ending long break');
+    endLongBreak().catch(err => console.error('Error ending long break:', err));
+    return;
+  }
+  
+  // Open the popup when notification is clicked (default behavior)
   chrome.action.openPopup();
 }
 

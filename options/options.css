@@ -236,3 +236,48 @@ footer {
     width: 100%;
   }
 }
+
+/* Add styling for range hints */
+.range-hint {
+  font-size: 0.8em;
+  color: #666;
+  font-weight: normal;
+  margin-left: 5px;
+}
+
+/* Make error messages more elegant and less obtrusive */
+.error-message {
+  background-color: rgba(244, 67, 54, 0.95);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  z-index: 1000;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  font-size: 14px;
+  max-width: 90%;
+  width: auto;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  border-left: 4px solid #d32f2f;
+}
+
+.error-message.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.error-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.error-text {
+  flex: 1;
+}
