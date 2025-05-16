@@ -13,12 +13,12 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
       
       - name: Create extension package
         run: |
@@ -27,7 +27,7 @@ jobs:
           zip -r dist/random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
       
       - name: Upload extension zip as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: random-beep-extension
           path: dist/random-beep.zip
