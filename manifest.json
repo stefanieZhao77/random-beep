@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Random Beep",
+  "name": "__MSG_extensionName__",
+  "default_locale": "en",
   "version": "1.0.0",
-  "description": "A focus methodology extension with random short breaks and scheduled long breaks",
+  "description": "__MSG_extensionDescription__",
   "permissions": [
     "alarms",
     "notifications",

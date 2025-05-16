@@ -7,6 +7,7 @@
 
 import { formatDuration, getLastNDays, getWeekNumber } from '../utils/time-utils.js';
 import { applyTheme, initializeTheme } from '../utils/theme-utils.js';
+import { languageManager } from '../utils/language-manager.js'; // Import languageManager
 
 // DOM Elements
 const dailyChartCanvas = document.getElementById('daily-chart');
@@ -29,14 +30,35 @@ let breakChart = null;
 
 // Statistics data
 let statisticsData = null;
+let currentSettings = null; // To store loaded settings including language
+
+// Function to apply internationalized strings to the page
+function applyI18n() {
+  document.querySelectorAll('[data-i18n-key]').forEach(element => {
+    const key = element.getAttribute('data-i18n-key');
+    const message = languageManager.get(key);
+    if (message) {
+      element.textContent = message;
+    }
+  });
+  // For elements like <title> that use __MSG_key__
+  document.title = languageManager.get("statisticsPageTitle") || document.title;
+  if (backButton) {
+    backButton.title = languageManager.get("statisticsBackButtonTitle") || backButton.title;
+  }
+}
 
 /**
  * Initialize the statistics page
  */
 async function initStatistics() {
   try {
-    // Initialize theme
+    // Load settings to get the language preference
+    currentSettings = await new Promise(resolve => chrome.runtime.sendMessage({ action: 'getSettings' }, resolve));
+    await languageManager.setLocale(currentSettings?.language || 'en');
+    
     await initializeTheme();
+    applyI18n(); // Apply translations after theme and before loading data that might use them
     
     // Load statistics data
     await loadStatistics();
@@ -45,7 +67,9 @@ async function initStatistics() {
     setupEventListeners();
   } catch (error) {
     console.error('Error initializing statistics page:', error);
-    displayErrorMessage('Failed to initialize statistics. Please try again later.');
+    // Ensure languageManager is loaded enough to get error messages if possible
+    await languageManager.setLocale(currentSettings?.language || 'en'); 
+    displayErrorMessage(languageManager.get("errorInitStats"));
   }
 }
 
@@ -58,7 +82,7 @@ async function loadStatistics() {
       chrome.storage.sync.get('statistics', (data) => {
         if (chrome.runtime.lastError) {
           console.error('Error loading statistics:', chrome.runtime.lastError);
-          displayErrorMessage('Could not load statistics data.');
+          displayErrorMessage(languageManager.get("errorLoadStats"));
           statisticsData = { dailyFocus: {}, weeklyFocus: {} };
           updateStatisticsDisplay();
           reject(chrome.runtime.lastError);
@@ -72,8 +96,9 @@ async function loadStatistics() {
   } catch (error) {
     console.error('Error in loadStatistics:', error);
     statisticsData = { dailyFocus: {}, weeklyFocus: {} };
-    updateStatisticsDisplay();
-    throw error;
+    updateStatisticsDisplay(); // Still update with empty data
+    displayErrorMessage(languageManager.get("errorLoadStats")); // Show error
+    throw error; // Re-throw if needed by caller, or handle more gracefully
   }
 }
 
@@ -132,10 +157,12 @@ function updateStatisticsDisplay() {
       createBreakChart();
     } else {
       console.error('Chart.js not available');
-      displayErrorMessage('Charts could not be loaded. Please reload the page.');
+      displayErrorMessage(languageManager.get("errorLoadCharts"));
     }
   } catch (error) {
     console.error('Error updating charts:', error);
+    // Consider a more specific error message for chart creation failure
+    displayErrorMessage(languageManager.get("errorLoadCharts")); 
   }
 }
 
@@ -192,7 +219,7 @@ function createDailyChart() {
   // Format labels as day names
   const labels = days.map(day => {
     const date = new Date(day);
-    return date.toLocaleDateString(undefined, { weekday: 'short' });
+    return date.toLocaleDateString(languageManager.getCurrentLocale(), { weekday: 'short' });
   });
   
   // Destroy existing chart if it exists
@@ -206,7 +233,7 @@ function createDailyChart() {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Focus Hours',
+        label: languageManager.get("statsChartFocusHoursLabel"),
         data: focusData,
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-color-1') || '#3F51B5',
         borderColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-color-1') || '#3F51B5',
@@ -221,7 +248,7 @@ function createDailyChart() {
           beginAtZero: true,
           title: {
             display: true,
-            text: 'Hours'
+            text: languageManager.get("statsChartHoursYAxisLabel")
           }
         }
       }
@@ -253,9 +280,9 @@ function createBreakChart() {
   
   // Create new chart
   breakChart = new Chart(breakChartCanvas, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
-      labels: ['Short Breaks', 'Long Breaks'],
+      labels: [languageManager.get("statsChartShortBreaksLabel"), languageManager.get("statsChartLongBreaksLabel")],
       datasets: [{
         data: [totalShortBreaks, totalLongBreaks],
         backgroundColor: [
@@ -282,127 +309,54 @@ function createBreakChart() {
  * Export statistics data as JSON
  */
 function exportStatistics() {
+  if (!statisticsData || Object.keys(statisticsData.dailyFocus || {}).length === 0) {
+    displayErrorMessage(languageManager.get("statsNoDataToExport"));
+    return;
+  }
   const dataStr = JSON.stringify(statisticsData, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-  
-  const exportFileName = `random-beep-statistics-${new Date().toISOString().split('T')[0]}.json`;
-  
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', exportFileName);
-  linkElement.style.display = 'none';
-  
-  document.body.appendChild(linkElement);
-  linkElement.click();
-  document.body.removeChild(linkElement);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'statistics.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert(languageManager.get("statsDataExported"));
 }
 
 /**
  * Show confirmation dialog for clearing statistics
  */
 function confirmClearStatistics() {
-  // Create confirmation dialog
-  const dialog = document.createElement('div');
-  dialog.className = 'confirmation-dialog';
-  
-  const dialogContent = document.createElement('div');
-  dialogContent.className = 'dialog-content';
-  
-  const dialogTitle = document.createElement('h3');
-  dialogTitle.className = 'dialog-title';
-  dialogTitle.textContent = 'Clear Statistics';
-  
-  const dialogMessage = document.createElement('p');
-  dialogMessage.className = 'dialog-message';
-  dialogMessage.textContent = 'Are you sure you want to clear all statistics data? This action cannot be undone.';
-  
-  const dialogButtons = document.createElement('div');
-  dialogButtons.className = 'dialog-buttons';
-  
-  const cancelButton = document.createElement('button');
-  cancelButton.className = 'secondary-button';
-  cancelButton.textContent = 'Cancel';
-  cancelButton.addEventListener('click', () => {
-    dialog.classList.remove('show');
-    setTimeout(() => {
-      document.body.removeChild(dialog);
-    }, 300);
-  });
-  
-  const confirmButton = document.createElement('button');
-  confirmButton.className = 'danger-button';
-  confirmButton.textContent = 'Clear Data';
-  confirmButton.addEventListener('click', () => {
-    clearStatistics();
-    dialog.classList.remove('show');
-    setTimeout(() => {
-      document.body.removeChild(dialog);
-    }, 300);
-  });
-  
-  dialogButtons.appendChild(cancelButton);
-  dialogButtons.appendChild(confirmButton);
-  
-  dialogContent.appendChild(dialogTitle);
-  dialogContent.appendChild(dialogMessage);
-  dialogContent.appendChild(dialogButtons);
-  
-  dialog.appendChild(dialogContent);
-  document.body.appendChild(dialog);
-  
-  // Show dialog with animation
-  setTimeout(() => {
-    dialog.classList.add('show');
-  }, 10);
+  if (confirm(languageManager.get("statsConfirmClear"))) {
+    clearAllStatistics();
+  }
 }
 
 /**
  * Clear all statistics data
  */
-function clearStatistics() {
-  chrome.runtime.sendMessage({ action: 'clearStatistics' }, (response) => {
-    console.log('Clear statistics response:', response);
-    
-    if (response && response.success) {
-      // Update local data
-      statisticsData = { dailyFocus: {}, weeklyFocus: {} };
-      
-      // Refresh charts and statistics display
-      updateStatisticsDisplay();
-      
-      // Show success message
-      const successMessage = document.createElement('div');
-      successMessage.className = 'success-message';
-      successMessage.textContent = 'Statistics cleared successfully!';
-      document.body.appendChild(successMessage);
-      
-      // Fade out after 3 seconds
-      setTimeout(() => {
-        successMessage.classList.add('fade-out');
-        setTimeout(() => {
-          if (document.body.contains(successMessage)) {
-            document.body.removeChild(successMessage);
-          }
-        }, 1000);
-      }, 3000);
-    } else {
-      // Show error message
-      const errorMessage = document.createElement('div');
-      errorMessage.className = 'error-message';
-      errorMessage.textContent = 'Failed to clear statistics. Please try again.';
-      document.body.appendChild(errorMessage);
-      
-      // Fade out after 3 seconds
-      setTimeout(() => {
-        errorMessage.classList.add('fade-out');
-        setTimeout(() => {
-          if (document.body.contains(errorMessage)) {
-            document.body.removeChild(errorMessage);
-          }
-        }, 1000);
-      }, 3000);
-    }
-  });
+async function clearAllStatistics() {
+  try {
+    await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({ action: 'clearStatistics' }, (response) => {
+        if (response && response.success) {
+          statisticsData = { dailyFocus: {}, weeklyFocus: {} };
+          updateStatisticsDisplay();
+          alert(languageManager.get("statsHistoryCleared"));
+          resolve();
+        } else {
+          alert(languageManager.get("statsClearHistoryFailed") + (response.error ? `: ${response.error}` : ''));
+          reject(new Error(response.error || "Failed to clear stats from background"));
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error clearing statistics:', error);
+    alert(languageManager.get("statsClearHistoryFailed"));
+  }
 }
 
 // Initialize statistics page when DOM is loaded

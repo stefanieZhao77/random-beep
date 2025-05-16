@@ -7,6 +7,7 @@
 
 import { formatTime, formatDuration } from '../utils/time-utils.js';
 import { initializeTheme, applyTheme } from '../utils/theme-utils.js';
+import { languageManager } from '../utils/language-manager.js'; // Import languageManager
 
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
@@ -31,12 +32,44 @@ let estimatedShortBreakMinute = null; // Store the estimated break time for cons
  * Initialize the popup
  */
 async function initPopup() {
-  // Load settings and session state
+  console.log('[Popup] initPopup started');
   await Promise.all([
     loadSettings(),
     loadSessionState()
   ]);
+  console.log('[Popup] Settings loaded:', settings);
   
+  await initializeTheme(); // This uses settings.theme
+  
+  try {
+    // Ensure language manager is properly initialized
+    if (settings && settings.language) {
+      console.log('[Popup] Attempting to set locale to:', settings.language);
+      await languageManager.setLocale(settings.language);
+      console.log('[Popup] languageManager current locale after setLocale:', languageManager.getCurrentLocale());
+    } else {
+      console.log('[Popup] No settings.language found or settings object missing, setting locale to en');
+      await languageManager.setLocale('en');
+      console.log('[Popup] languageManager current locale after setLocale (fallback):', languageManager.getCurrentLocale());
+    }
+    
+    // Double check if any keys are loaded
+    if (!languageManager.isInitialized || typeof languageManager.isInitialized === 'function' && !languageManager.isInitialized()) {
+      console.warn('[Popup] Language manager not properly initialized. Forced loading of English locale');
+      await languageManager.setLocale('en');
+    }
+    
+    console.log('[Popup] Setting static i18n text');
+    setStaticI18nText();
+    console.log('[Popup] setStaticI18nText completed');
+    
+    // Update the UI after message loading
+    updateUI();
+    console.log('[Popup] updateUI completed');
+  } catch (err) {
+    console.error('[Popup] Error initializing language manager:', err);
+  }
+
   // Set up event listeners
   setupEventListeners();
   
@@ -45,9 +78,7 @@ async function initPopup() {
   
   // Load statistics
   loadStatistics();
-  
-  // Apply theme from settings
-  await initializeTheme();
+  console.log('[Popup] initPopup finished');
 }
 
 /**
@@ -98,7 +129,7 @@ function setupEventListeners() {
   
   // Reset button
   resetButton.addEventListener('click', () => {
-    if (confirm('Are you sure you want to reset the current session?')) {
+    if (confirm(languageManager.get("popupConfirmResetSession"))) {
       resetSession();
     }
   });
@@ -323,81 +354,34 @@ function updateProgressBar() {
  * Update break information
  */
 function updateBreakInfo() {
-  if (!currentSession || !settings) {
-    shortBreakTimeElement.textContent = 'N/A';
-    longBreakTimeElement.textContent = 'N/A';
-    estimatedShortBreakMinute = null; // Reset when no session
+  const defaultStatus = languageManager.get("popupBreakTimeDefaultStatus");
+  if (!settings || !currentSession) {
+    const calculatingText = languageManager.get("popupCalculatingStatus");
+    shortBreakTimeElement.textContent = calculatingText;
+    longBreakTimeElement.textContent = calculatingText;
     return;
   }
 
   // Short break info
-  if (currentSession.state === 'active') {
-    // Calculate next short break time based on settings.shortPeriodDuration
-    // For random breaks, show an estimated time
-    if (estimatedShortBreakMinute === null) {
-      // Only calculate once per session, between 20% and 80% of the period
-      estimatedShortBreakMinute = Math.round(settings.shortPeriodDuration * (0.2 + Math.random() * 0.6));
-    }
-    // Use consistent format with prefix
-    shortBreakTimeElement.textContent = `~${estimatedShortBreakMinute} mins (random)`;
-  } else if (currentSession.state === 'shortBreak') {
-    try {
-      const now = Date.now();
-      const elapsed = (now - currentSession.stateStartTime) / 1000;
-      const remaining = Math.max(0, Math.ceil(settings.shortBreakDuration - elapsed));
-      shortBreakTimeElement.textContent = `${remaining}s remaining`;
-    } catch (error) {
-      console.error('Error updating short break info:', error);
-      shortBreakTimeElement.textContent = 'ending...';
-    }
-  } else if (currentSession.state === 'paused') {
-    shortBreakTimeElement.textContent = `~paused (random)`;
+  if (currentSession.state === SessionState.ACTIVE && currentSession.nextShortBreakTime) {
+    const minutesUntilShortBreak = Math.max(0, Math.round((currentSession.nextShortBreakTime - Date.now()) / 60000));
+    shortBreakTimeElement.textContent = minutesUntilShortBreak > 0 
+                                      ? languageManager.get("popupBreakTimeInMinutes", String(minutesUntilShortBreak))
+                                      : languageManager.get("popupBreakTimeSoon");
+  } else if (currentSession.state === SessionState.SHORT_BREAK) {
+    shortBreakTimeElement.textContent = languageManager.get("popupBreakTimeActiveShort"); 
   } else {
-    shortBreakTimeElement.textContent = 'N/A';
-    estimatedShortBreakMinute = null; // Reset when idle or other states
+    shortBreakTimeElement.textContent = defaultStatus;
   }
 
   // Long break info
-  switch (currentSession.state) {
-    case 'active':
-    case 'paused': // Show remaining time even if paused
-      try {
-        const totalSessionTime = settings.longPeriodDuration * 60; // in seconds
-        // elapsedTime is the total focus time so far for the current focus period
-        const elapsedSeconds = currentSession.elapsedTime || 0;
-        const remainingSeconds = Math.max(0, totalSessionTime - elapsedSeconds);
-        
-        if (currentSession.state === 'paused') {
-            longBreakTimeElement.textContent = `paused (${formatDuration(remainingSeconds)} to long break)`;
-        } else {
-            longBreakTimeElement.textContent = `${formatDuration(remainingSeconds)} to long break`;
-        }
-      } catch (error) {
-        console.error('Error updating long break info for active/paused session:', error);
-        longBreakTimeElement.textContent = 'calculating...';
-      }
-      break;
-    case 'longBreak':
-      try {
-        const now = Date.now();
-        const elapsed = (now - currentSession.stateStartTime) / 1000;
-        const totalBreakTime = settings.longBreakDuration * 60;
-        const remaining = Math.max(0, totalBreakTime - elapsed);
-        
-        // If no time remaining, show 'Complete' instead of '0s remaining'
-        if (remaining <= 0) {
-          longBreakTimeElement.textContent = 'Complete';
-        } else {
-          longBreakTimeElement.textContent = `${formatDuration(remaining)} remaining`;
-        }
-      } catch (error) {
-        console.error('Error updating long break info for long break:', error);
-        longBreakTimeElement.textContent = 'ending...';
-      }
-      break;
-    default: // idle, shortBreak
-      longBreakTimeElement.textContent = 'N/A';
-      break;
+  if (currentSession.state === SessionState.ACTIVE && currentSession.nextLongBreakTime) {
+    const minutesUntilLongBreak = Math.max(0, Math.round((currentSession.nextLongBreakTime - Date.now()) / 60000));
+    longBreakTimeElement.textContent = languageManager.get("popupBreakTimeInMinutes", String(minutesUntilLongBreak));
+  } else if (currentSession.state === SessionState.LONG_BREAK) {
+    longBreakTimeElement.textContent = languageManager.get("popupBreakTimeActiveLong");
+  } else {
+    longBreakTimeElement.textContent = defaultStatus;
   }
 }
 
@@ -405,8 +389,10 @@ function updateBreakInfo() {
  * Update control buttons state
  */
 function updateControlButtons() {
+  const startButtonTextElement = startButton.querySelector('span:last-child');
+
   if (!currentSession) {
-    startButton.querySelector('span:last-child').textContent = 'Start';
+    if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupStartButtonText");
     startButton.disabled = false;
     pauseButton.disabled = true;
     resetButton.disabled = true;
@@ -415,38 +401,44 @@ function updateControlButtons() {
   
   switch (currentSession.state) {
     case 'idle':
-      startButton.querySelector('span:last-child').textContent = 'Start';
+      if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupStartButtonText");
       startButton.disabled = false;
       pauseButton.disabled = true;
       resetButton.disabled = true;
       break;
       
     case 'active':
-      startButton.querySelector('span:last-child').textContent = 'Start';
+      // Start button is disabled, text doesn't strictly matter but keep it consistent
+      if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupStartButtonText"); 
       startButton.disabled = true;
       pauseButton.disabled = false;
       resetButton.disabled = false;
       break;
       
     case 'paused':
-      startButton.querySelector('span:last-child').textContent = 'Resume';
+      if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupResumeButtonText"); // New key needed
       startButton.disabled = false;
       pauseButton.disabled = true;
       resetButton.disabled = false;
       break;
       
     case 'shortBreak':
-      startButton.querySelector('span:last-child').textContent = 'Start';
+      // Start button is disabled
+      if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupStartButtonText");
       startButton.disabled = true;
       pauseButton.disabled = true;
       resetButton.disabled = false;
       break;
       
     case 'longBreak':
-      startButton.querySelector('span:last-child').textContent = 'Start New';
+      if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupStartNewButtonText"); // New key needed
       startButton.disabled = false;
       pauseButton.disabled = true;
       resetButton.disabled = false;
+      break;
+    default:
+      // Default to Start text if state is unknown
+      if (startButtonTextElement) startButtonTextElement.textContent = languageManager.get("popupStartButtonText");
       break;
   }
 }
@@ -479,36 +471,36 @@ function updateSessionStateClasses() {
  */
 async function loadStatistics() {
   try {
-    // Get today's date
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Get statistics from storage
-    chrome.storage.sync.get('statistics', (data) => {
-      if (chrome.runtime.lastError) {
-        console.error('Error loading statistics:', chrome.runtime.lastError);
-        // Use placeholder values if statistics can't be loaded
-        todayFocusElement.textContent = 'Today\'s Focus: 0h 0m';
-        breaksTakenElement.textContent = 'Breaks Taken: 0 short, 0 long';
-        return;
-      }
-      
-      const statistics = data.statistics || { dailyFocus: {}, weeklyFocus: {} };
-      const todayStats = statistics.dailyFocus[today] || {
-        totalFocusTime: 0,
-        shortBreaksTaken: 0,
-        longBreaksTaken: 0,
-        sessionsCompleted: 0
-      };
-      
-      // Update UI with statistics
-      todayFocusElement.textContent = `Today's Focus: ${formatDuration(todayStats.totalFocusTime)}`;
-      breaksTakenElement.textContent = `Breaks Taken: ${todayStats.shortBreaksTaken} short, ${todayStats.longBreaksTaken} long`;
+    const stats = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: 'getStatistics' }, resolve);
     });
+
+    if (stats) {
+      // Update Today's Focus time
+      const focusLabel = languageManager.get("popupTodayFocusLabel");
+      todayFocusElement.textContent = `${focusLabel} ${formatDuration(stats.totalFocusDurationToday || 0)}`;
+
+      // Update Breaks Taken
+      const breaksLabel = languageManager.get("popupBreaksTakenLabel");
+      const shortUnit = languageManager.get("popupBreaksTakenShortUnit");
+      const longUnit = languageManager.get("popupBreaksTakenLongUnit");
+      breaksTakenElement.textContent = `${breaksLabel} ${stats.shortBreaksToday || 0} ${shortUnit}, ${stats.longBreaksToday || 0} ${longUnit}`;
+    } else {
+      // Handle case where stats might be null or undefined
+      const focusLabel = languageManager.get("popupTodayFocusLabel");
+      todayFocusElement.textContent = `${focusLabel} 0h 0m`;
+      const breaksLabel = languageManager.get("popupBreaksTakenLabel");
+      const shortUnit = languageManager.get("popupBreaksTakenShortUnit");
+      const longUnit = languageManager.get("popupBreaksTakenLongUnit");
+      breaksTakenElement.textContent = `${breaksLabel} 0 ${shortUnit}, 0 ${longUnit}`;
+    }
   } catch (error) {
-    console.error('Error loading statistics:', error);
-    // Use placeholder values if statistics can't be loaded
-    todayFocusElement.textContent = 'Today\'s Focus: 0h 0m';
-    breaksTakenElement.textContent = 'Breaks Taken: 0 short, 0 long';
+    console.error('Error loading statistics for popup:', error);
+    // Fallback display on error
+    const focusLabel = languageManager.get("popupTodayFocusLabel");
+    todayFocusElement.textContent = `${focusLabel} N/A`;
+    const breaksLabel = languageManager.get("popupBreaksTakenLabel");
+    breaksTakenElement.textContent = `${breaksLabel} N/A`;
   }
 }
 
@@ -516,19 +508,83 @@ async function loadStatistics() {
  * Handle messages from the background script
  * @param {Object} message - Message object
  */
-function handleMessage(message) {
+async function handleMessage(message) {
+  console.log('[Popup] handleMessage received:', message);
   if (message.type === 'sessionChanged') {
     currentSession = message.session;
     updateUI();
   } else if (message.type === 'settingsChanged') {
     settings = message.settings;
-    // Apply theme when settings change
+    console.log('[Popup] settingsChanged - new settings:', settings);
     if (settings.theme === 'custom' && settings.customTheme) {
       applyTheme(settings.theme, settings.customTheme);
     } else {
       applyTheme(settings.theme);
     }
+    if (settings.language) {
+      console.log('[Popup] settingsChanged - attempting to set locale to:', settings.language);
+      await languageManager.setLocale(settings.language);
+      console.log('[Popup] settingsChanged - languageManager current locale:', languageManager.getCurrentLocale());
+    }
+    setStaticI18nText();
     updateUI();
+    console.log('[Popup] settingsChanged - UI updated after locale change');
+  }
+}
+
+function setStaticI18nText() {
+  // First check if messages are loaded
+  if (!languageManager.getCurrentLocale() || languageManager.getCurrentLocale() === '') {
+    console.log('[Popup] No locale set when trying to set static i18n text. Forcing reload of messages for locale:', settings?.language || 'en');
+    languageManager.setLocale(settings?.language || 'en').then(() => {
+      console.log('[Popup] Messages reloaded. Setting static i18n text again.');
+      setStaticI18nText(); // Try again after loading
+      return;
+    }).catch(error => {
+      console.error('[Popup] Error reloading messages:', error);
+    });
+    return;
+  }
+  
+  console.log('[Popup] Setting static i18n text for locale:', languageManager.getCurrentLocale());
+  
+  document.querySelectorAll('[data-i18n-key]').forEach(element => {
+    const key = element.getAttribute('data-i18n-key');
+    const message = languageManager.get(key);
+    if (message) {
+      // If the element is a title or has a specific target for its text (like a span inside a button)
+      // this simple textContent might need adjustment, but for most cases it's fine.
+      element.textContent = message;
+    }
+  });
+
+  // Handle title attributes specifically
+  document.querySelectorAll('[data-i18n-title-key]').forEach(element => {
+    const key = element.getAttribute('data-i18n-title-key');
+    const message = languageManager.get(key);
+    if (message) {
+      element.title = message;
+    }
+  });
+
+  // Specifically set the document title
+  const pageTitleKey = document.titleElement && document.titleElement.getAttribute('data-i18n-key');
+  if (pageTitleKey) {
+    const titleMessage = languageManager.get(pageTitleKey);
+    if (titleMessage) document.title = titleMessage;
+  } else { // Fallback for older approach if needed, or if title is not tagged with data-i18n-key
+    const defaultTitle = languageManager.get("extensionName");
+    if (defaultTitle) document.title = defaultTitle;
+  }
+
+  // Set initial calculating status for break times using their specific calculating key
+  const calculatingStatusKey = shortBreakTimeElement.getAttribute('data-i18n-key-calculating');
+  if (calculatingStatusKey) {
+      const calculatingMessage = languageManager.get(calculatingStatusKey);
+      if (calculatingMessage) {
+        if (shortBreakTimeElement) shortBreakTimeElement.textContent = calculatingMessage;
+        if (longBreakTimeElement) longBreakTimeElement.textContent = calculatingMessage;
+      }
   }
 }
 
@@ -539,3 +595,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener(handleMessage);
+
+// Ensure SessionState enum/object is available or define it if not already from background script context
+const SessionState = {
+  IDLE: 'idle',
+  ACTIVE: 'active',
+  PAUSED: 'paused',
+  SHORT_BREAK: 'shortBreak',
+  LONG_BREAK: 'longBreak'
+};

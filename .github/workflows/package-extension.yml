@@ -1,0 +1,45 @@
+name: Package Chrome Extension
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      
+      - name: Create extension package
+        run: |
+          echo "Creating Chrome extension package..."
+          mkdir -p dist
+          zip -r dist/random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
+      
+      - name: Upload extension zip as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: random-beep-extension
+          path: dist/random-beep.zip
+      
+      - name: Create release if tagged version
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Creating release for version $VERSION"
+          gh release create "${{ github.ref_name }}" \
+            --title "Random Beep v$VERSION" \
+            --notes "Release of version $VERSION. See CHANGELOG.md for details." \
+            dist/random-beep.zip 

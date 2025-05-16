@@ -1,0 +1,266 @@
+{
+  "extensionName": {
+    "message": "随机提示",
+    "description": "扩展程序的名称。"
+  },
+  "extensionDescription": {
+    "message": "帮助您科学保持专注，具有随机短时休息和预定长时休息功能。",
+    "description": "扩展程序的简要说明。"
+  },
+  "popupSettingsButtonTitle": {
+    "message": "设置",
+    "description": "弹出窗口中设置按钮的工具提示。"
+  },
+  "popupStartButtonText": {
+    "message": "开始",
+    "description": "弹出窗口中开始按钮的文本。"
+  },
+  "popupPauseButtonText": {
+    "message": "暂停",
+    "description": "弹出窗口中暂停按钮的文本。"
+  },
+  "popupResetButtonText": {
+    "message": "重置",
+    "description": "弹出窗口中重置按钮的文本。"
+  },
+  "popupViewStatsButtonText": {
+    "message": "查看完整统计",
+    "description": "弹出窗口中查看完整统计按钮的文本。"
+  },
+  "optionsPageTitle": {
+    "message": "随机提示 设置",
+    "description": "选项页面的标题。"
+  },
+  "optionsSaveButtonText": {
+    "message": "保存",
+    "description": "选项页面上保存按钮的文本。"
+  },
+  "optionsResetButtonText": {
+    "message": "重置",
+    "description": "选项页面上重置按钮的文本。"
+  },
+
+  "notificationShortBreakTitle": {
+    "message": "短时休息时间到！",
+    "description": "短时休息通知的标题。"
+  },
+  "notificationShortBreakMessage": {
+    "message": "休息 $duration$ 秒，放松一下眼睛和心灵。",
+    "description": "短时休息通知的消息。预期一个 'duration' 占位符。",
+    "placeholders": {
+      "duration": {
+        "content": "$1",
+        "example": "10"
+      }
+    }
+  },
+  "notificationShortBreakEndTitle": {
+    "message": "短时休息结束",
+    "description": "短时休息结束通知的标题。"
+  },
+  "notificationShortBreakEndMessage": {
+    "message": "您的短时休息已结束。回到专注模式！",
+    "description": "短时休息结束通知的消息。"
+  },
+  "notificationLongBreakTitle": {
+    "message": "长时休息时间到！",
+    "description": "长时休息通知的标题。"
+  },
+  "notificationLongBreakMessage": {
+    "message": "休息 $duration$ 分钟，为自己充充电。",
+    "description": "长时休息通知的消息。预期一个 'duration' 占位符。",
+    "placeholders": {
+      "duration": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "notificationSessionCompleteTitle": {
+    "message": "专注时段完成",
+    "description": "专注时段完成通知的标题。"
+  },
+  "notificationSessionCompleteMessage": {
+    "message": "太棒了！您已完成本次专注时段。",
+    "description": "专注时段完成通知的消息。"
+  },
+  "notificationDefaultMessage": {
+    "message": "来自随机提示的通知",
+    "description": "类型未知时的默认通知消息。"
+  },
+
+  "notificationEndBreakButton": {
+    "message": "结束休息",
+    "description": "通知中'结束休息'按钮的文本。"
+  },
+
+  "popupShortBreakLabel": {
+    "message": "短时休息：",
+    "description": "弹出窗口中短时休息时间的标签。"
+  },
+  "popupLongBreakLabel": {
+    "message": "长时休息：",
+    "description": "弹出窗口中长时休息时间的标签。"
+  },
+  "popupCalculatingStatus": {
+    "message": "计算中...",
+    "description": "计算休息时间时的状态文本。"
+  },
+  "popupTodayFocusLabel": {
+    "message": "今日专注：",
+    "description": "弹出窗口中今日专注时间的标签。"
+  },
+  "popupBreaksTakenLabel": {
+    "message": "已完成休息：",
+    "description": "弹出窗口中已完成休息次数的标签。"
+  },
+  "popupBreaksTakenShortUnit": {
+    "message": "短",
+    "description": "已完成休息摘要中短时休息的单位。"
+  },
+  "popupBreaksTakenLongUnit": {
+    "message": "长",
+    "description": "已完成休息摘要中长时休息的单位。"
+  },
+
+  "popupBreakTimeSoon": {
+    "message": "即将",
+    "description": "休息时间非常接近时的状态。"
+  },
+  "popupBreakTimeInMinutes": {
+    "message": "$minutes$ 分钟后",
+    "description": "休息时间状态（分钟）。预期 'minutes' 占位符。",
+    "placeholders": {
+      "minutes": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "popupBreakTimeActiveShort": {
+    "message": "进行中 (短休)",
+    "description": "指示短时休息正在进行的状态。"
+  },
+  "popupBreakTimeActiveLong": {
+    "message": "进行中 (长休)",
+    "description": "指示长时休息正在进行的状态。"
+  },
+  "popupBreakTimeDefaultStatus": {
+    "message": "--",
+    "description": "没有特定休息时间可用时的默认占位符。"
+  },
+
+  "optionsTimerSettingsTitle": { "message": "计时器设置", "description": "计时器设置部分的标题" },
+  "optionsNotificationSettingsTitle": { "message": "通知设置", "description": "通知设置部分的标题" },
+  "optionsThemeSettingsTitle": { "message": "主题设置", "description": "主题设置部分的标题" },
+  "optionsShortPeriodDurationLabel": { "message": "短时休息时长：", "description": "短时休息时长设置的标签" },
+  "optionsShortPeriodDurationHint": {
+    "message": "默认 $minutes$ 分钟",
+    "description": "短时休息时长的提示。预期 'minutes' 占位符。",
+    "placeholders": { "minutes": { "content": "$1", "example": "5" } }
+  },
+  "optionsShortBreakDurationLabel": { "message": "短时休息时长：", "description": "短时休息时长设置的标签" },
+  "optionsShortBreakDurationHint": {
+    "message": "默认 $seconds$ 秒",
+    "description": "短时休息时长的提示。预期 'seconds' 占位符。",
+    "placeholders": { "seconds": { "content": "$1", "example": "10" } }
+  },
+  "optionsLongPeriodDurationLabel": { "message": "长时休息时长：", "description": "长时休息时长设置的标签" },
+  "optionsLongPeriodDurationHint": {
+    "message": "默认 $minutes$ 分钟",
+    "description": "长时休息时长的提示。预期 'minutes' 占位符。",
+    "placeholders": { "minutes": { "content": "$1", "example": "90" } }
+  },
+  "optionsLongBreakDurationLabel": { "message": "长时休息时长：", "description": "长时休息时长设置的标签" },
+  "optionsLongBreakDurationHint": {
+    "message": "默认 $minutes$ 分钟",
+    "description": "长时休息时长的提示。预期 'minutes' 占位符。",
+    "placeholders": { "minutes": { "content": "$1", "example": "20" } }
+  },
+  "optionsShortBreakSoundLabel": { "message": "短时休息提示音：", "description": "短时休息提示音设置的标签" },
+  "optionsLongBreakSoundLabel": { "message": "长时休息提示音：", "description": "长时休息提示音设置的标签" },
+  "optionsPreviewButtonText": { "message": "预览", "description": "声音预览按钮的文本" },
+  "optionsEnableNotificationSoundsLabel": { "message": "启用通知提示音", "description": "启用通知提示音设置的标签" },
+  "optionsAutoStartNextSessionLabel": { "message": "长时休息后自动开始下一时段", "description": "自动开始下一时段设置的标签" },
+  "optionsThemeLabel": { "message": "主题：", "description": "主题设置的标签" },
+  "optionsThemeLight": { "message": "浅色", "description": "浅色主题选项" },
+  "optionsThemeDark": { "message": "深色", "description": "深色主题选项" },
+  "optionsThemeDefault": { "message": "默认", "description": "默认主题选项" },
+  "optionsThemeCustom": { "message": "自定义", "description": "自定义主题选项" },
+  "optionsPrimaryColorLabel": { "message": "主颜色：", "description": "主颜色设置的标签" },
+  "optionsSecondaryColorLabel": { "message": "次颜色：", "description": "次颜色设置的标签" },
+  "optionsMinutesUnit": { "message": "分钟", "description": "时间单位：分钟"},
+  "optionsSecondsUnit": { "message": "秒", "description": "时间单位：秒"},
+  "errorShortPeriodDurationRange": { "message": "短时时段时长必须在 1-60 分钟之间", "description": "验证错误消息" },
+  "errorShortBreakDurationRange": { "message": "短时休息时长必须在 5-60 秒之间", "description": "验证错误消息" },
+  "errorLongPeriodDurationRange": { "message": "长时时段时长必须在 15-240 分钟之间", "description": "验证错误消息" },
+  "errorLongBreakDurationRange": { "message": "长时休息时长必须在 1-60 分钟之间", "description": "验证错误消息" },
+  "errorFailedToSaveSettings": { "message": "保存设置失败：", "description": "错误消息前缀" },
+  "successSettingsSaved": { "message": "设置已成功保存！", "description": "成功消息" },
+  "confirmResetSettings": { "message": "您确定要将所有设置重置为默认值吗？", "description": "确认消息" },
+  "successSettingsReset": { "message": "设置已重置为默认值！", "description": "成功消息" },
+  "soundPlaying": { "message": "正在播放声音...", "description": "状态消息" },
+  "errorCouldNotPlaySound": { "message": "无法播放声音。请检查控制台获取详细信息。", "description": "错误消息" },
+  "errorFailedToFetchSound": { "message": "获取声音文件失败：$status$", "description": "错误消息。预期 'status' 占位符。", "placeholders": { "status": { "content": "$1", "example": "404 Not Found" } } },
+  "soundPlayingWebAudio": { "message": "正在使用 Web Audio 播放声音...", "description": "状态消息" },
+  "errorWebAudioPlaybackFailed": { "message": "无法使用任何方法播放声音。请检查控制台。", "description": "错误消息" },
+
+  "statisticsPageTitle": { "message": "随机提示 统计数据", "description": "统计页面的标题" },
+  "statisticsHeader": { "message": "专注统计", "description": "统计页面的标题文本" },
+  "statisticsBackButtonTitle": { "message": "返回扩展", "description": "统计页面上返回按钮的工具提示" },
+  "statisticsDailyOverviewTitle": { "message": "每日概览", "description": "每日概览部分的标题" },
+  "statisticsFocusMetricsTitle": { "message": "专注指标", "description": "专注指标部分的标题" },
+  "statisticsBreakDistributionTitle": { "message": "休息分布", "description": "休息分布部分的标题" },
+  "statisticsTodayLabel": { "message": "今日", "description": "今日指标组的标签" },
+  "statisticsThisWeekLabel": { "message": "本周", "description": "本周指标组的标签" },
+  "statisticsTotalFocusTimeLabel": { "message": "总专注时长：", "description": "总专注时长指标的标签" },
+  "statisticsShortBreaksLabel": { "message": "短时休息：", "description": "短时休息指标的标签" },
+  "statisticsLongBreaksLabel": { "message": "长时休息：", "description": "长时休息指标的标签" },
+  "statisticsSessionsCompletedLabel": { "message": "已完成时段：", "description": "已完成时段指标的标签" },
+  "statisticsExportButtonText": { "message": "导出数据", "description": "导出数据按钮的文本" },
+  "statisticsClearHistoryButtonText": { "message": "清除历史记录", "description": "清除历史记录按钮的文本" },
+  "errorInitStats": { "message": "初始化统计数据失败。请稍后重试。", "description": "统计页面中的错误消息" },
+  "statsNoDataToExport": { "message": "没有可导出的统计数据。", "description": "没有数据可导出时的消息" },
+  "statsConfirmClear": { "message": "您确定要清除所有统计数据吗？此操作无法撤销。", "description": "清除统计数据的确认消息" },
+  "statsDataExported": { "message": "统计数据已成功导出为 statistics.json", "description": "数据导出成功时的成功消息" },
+  "statsDataExportFailed": { "message": "导出统计数据失败。", "description": "数据导出失败时的错误消息" },
+  "statsHistoryCleared": { "message": "统计历史记录已成功清除。", "description": "历史记录清除成功时的成功消息" },
+  "statsClearHistoryFailed": { "message": "清除统计历史记录失败。", "description": "清除历史记录失败时的错误消息" },
+  "errorLoadStats": { "message": "无法加载统计数据。", "description": "统计页面中的错误消息" },
+  "errorLoadCharts": { "message": "无法加载图表。请重新加载页面。", "description": "统计页面中的错误消息" },
+  "statsChartFocusHoursLabel": { "message": "专注小时数", "description": "图表中专注小时数数据集的标签" },
+  "statsChartHoursYAxisLabel": { "message": "小时", "description": "图表中小时数Y轴的标题" },
+  "statsChartShortBreaksLabel": { "message": "短时休息", "description": "图表中短时休息数据集的标签" },
+  "statsChartLongBreaksLabel": { "message": "长时休息", "description": "图表中长时休息数据集的标签" },
+  "confirmClearStats": { "message": "您确定要清除所有统计数据吗？此操作无法撤销。", "description": "清除统计数据的确认消息" },
+  "successStatsCleared": { "message": "统计数据已成功清除。", "description": "清除统计数据后的成功消息" },
+  "errorClearStats": { "message": "清除统计数据失败。", "description": "清除统计数据失败时的错误消息" },
+  "statsExportedSuccessfully": { "message": "统计数据已成功导出为 statistics.json", "description": "数据导出成功消息" },
+  "statsExportFailed": { "message": "导出统计数据失败。", "description": "数据导出失败错误消息" },
+
+  "popupResumeButtonText": {
+    "message": "继续",
+    "description": "弹出窗口中继续按钮的文本。"
+  },
+  "popupStartNewButtonText": {
+    "message": "开始",
+    "description": "弹出窗口中重新开始按钮的文本（长时休息后）。"
+  },
+  "popupConfirmResetSession": {
+    "message": "您确定要重置当前时段吗？",
+    "description": "弹出窗口中重置当前时段的确认消息。"
+  },
+
+  "optionsLanguageSettingsTitle": {
+    "message": "语言设置",
+    "description": "选项页面中语言设置部分的标题。"
+  },
+  "optionsSelectLanguageLabel": {
+    "message": "选择语言：",
+    "description": "选项页面中语言选择下拉菜单的标签。"
+  },
+  "optionsLanguageChangeNote": {
+    "message": "语言偏好已保存。更改将在重新加载扩展程序或下次打开时完全应用。",
+    "description": "更改语言后显示的提示。"
+  }
+} 

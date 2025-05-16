@@ -109,7 +109,7 @@ h1 {
   flex: 1;
   padding: 12px 8px;
   background-color: var(--primary-color);
-  color: white;
+  color: var(--primary-text-color);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -117,12 +117,12 @@ h1 {
   font-weight: 500;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  text-wrap: nowrap;
-  min-width: 80px;
+  min-width: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .control-button:hover {
@@ -141,6 +141,13 @@ h1 {
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+/* Style for the control button text span */
+.control-button span:last-child {
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
 }
 
 .stats-summary {
@@ -163,7 +170,7 @@ h1 {
   width: 100%;
   padding: 14px;
   background-color: var(--secondary-color);
-  color: var(--text-color);
+  color: var(--secondary-text-color);
   font-weight: 500;
   border: none;
   border-radius: 8px;

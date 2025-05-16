@@ -26,7 +26,8 @@ function getDefaultSettings() {
     customTheme: {
       primaryColor: "#3F51B5",
       secondaryColor: "#FFC107"
-    }
+    },
+    language: 'en'
   };
 }
 
@@ -141,6 +142,11 @@ function validateSettings(settings) {
         };
       }
     }
+
+    // Validate language
+    validated.language = ['en', 'zh'].includes(settings.language)
+      ? settings.language
+      : defaults.language;
   }
 
   return validated;

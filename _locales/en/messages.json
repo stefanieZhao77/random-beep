@@ -1,0 +1,269 @@
+{
+  "extensionName": {
+    "message": "Random Beep",
+    "description": "The name of the extension."
+  },
+  "extensionDescription": {
+    "message": "A focus methodology extension with random short breaks and scheduled long breaks.",
+    "description": "A brief description of the extension."
+  },
+  "popupSettingsButtonTitle": {
+    "message": "Settings",
+    "description": "Tooltip for the settings button in the popup."
+  },
+  "popupStartButtonText": {
+    "message": "Start",
+    "description": "Text for the Start button in the popup."
+  },
+  "popupPauseButtonText": {
+    "message": "Pause",
+    "description": "Text for the Pause button in the popup."
+  },
+  "popupResetButtonText": {
+    "message": "Reset",
+    "description": "Text for the Reset button in the popup."
+  },
+  "popupViewStatsButtonText": {
+    "message": "View Full Statistics",
+    "description": "Text for the View Full Statistics button in the popup."
+  },
+  "optionsPageTitle": {
+    "message": "Random Beep Settings",
+    "description": "Title for the options page."
+  },
+  "optionsSaveButtonText": {
+    "message": "Save",
+    "description": "Text for the Save button on the options page."
+  },
+  "optionsResetButtonText": {
+    "message": "Reset",
+    "description": "Text for the Reset button on the options page."
+  },
+
+  "notificationShortBreakTitle": {
+    "message": "Time for a Short Break!",
+    "description": "Title for the short break notification."
+  },
+  "notificationShortBreakMessage": {
+    "message": "Take a $duration$ second break to rest your eyes and mind.",
+    "description": "Message for the short break notification. Expects a 'duration' placeholder.",
+    "placeholders": {
+      "duration": {
+        "content": "$1",
+        "example": "10"
+      }
+    }
+  },
+  "notificationShortBreakEndTitle": {
+    "message": "Short Break Finished",
+    "description": "Title for the short break end notification."
+  },
+  "notificationShortBreakEndMessage": {
+    "message": "Your short break is over. Back to focus mode!",
+    "description": "Message for the short break end notification."
+  },
+  "notificationLongBreakTitle": {
+    "message": "Time for a Long Break!",
+    "description": "Title for the long break notification."
+  },
+  "notificationLongBreakMessage": {
+    "message": "Take a $duration$ minute break to recharge.",
+    "description": "Message for the long break notification. Expects a 'duration' placeholder.",
+    "placeholders": {
+      "duration": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "notificationSessionCompleteTitle": {
+    "message": "Focus Session Complete",
+    "description": "Title for the session complete notification."
+  },
+  "notificationSessionCompleteMessage": {
+    "message": "Great job! You've completed your focus session.",
+    "description": "Message for the session complete notification."
+  },
+  "notificationDefaultMessage": {
+    "message": "Notification from Random Beep",
+    "description": "Default notification message if type is unknown."
+  },
+
+  "notificationEndBreakButton": {
+    "message": "End Break",
+    "description": "Text for the 'End Break' button in notifications."
+  },
+
+  "popupShortBreakLabel": {
+    "message": "Short break:",
+    "description": "Label for short break time in popup."
+  },
+  "popupLongBreakLabel": {
+    "message": "Long break:",
+    "description": "Label for long break time in popup."
+  },
+  "popupCalculatingStatus": {
+    "message": "calculating...",
+    "description": "Status text when break time is being calculated."
+  },
+  "popupTodayFocusLabel": {
+    "message": "Today's Focus:",
+    "description": "Label for today's focus time in popup."
+  },
+  "popupBreaksTakenLabel": {
+    "message": "Breaks Taken:",
+    "description": "Label for breaks taken in popup."
+  },
+  "popupBreaksTakenShortUnit": {
+    "message": "short",
+    "description": "Unit for short breaks in the breaks taken summary."
+  },
+  "popupBreaksTakenLongUnit": {
+    "message": "long",
+    "description": "Unit for long breaks in the breaks taken summary."
+  },
+
+  "popupBreakTimeSoon": {
+    "message": "soon",
+    "description": "Status for break time when it is very close."
+  },
+  "popupBreakTimeInMinutes": {
+    "message": "in $minutes$ min",
+    "description": "Status for break time, in minutes. Expects 'minutes' placeholder.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "popupBreakTimeActiveShort": {
+    "message": "Active (short)",
+    "description": "Status indicating a short break is currently active."
+  },
+  "popupBreakTimeActiveLong": {
+    "message": "Active (long)",
+    "description": "Status indicating a long break is currently active."
+  },
+  "popupBreakTimeDefaultStatus": {
+    "message": "--",
+    "description": "Default placeholder when no specific break time is available."
+  },
+
+  "optionsTimerSettingsTitle": { "message": "Timer Settings", "description": "Title for Timer Settings section" },
+  "optionsNotificationSettingsTitle": { "message": "Notification Settings", "description": "Title for Notification Settings section" },
+  "optionsThemeSettingsTitle": { "message": "Theme Settings", "description": "Title for Theme Settings section" },
+  "optionsShortPeriodDurationLabel": { "message": "Short Period Duration:", "description": "Label for Short Period Duration setting" },
+  "optionsShortPeriodDurationHint": {
+    "message": "$minutes$ mins default",
+    "description": "Hint for Short Period Duration. Expects 'minutes' placeholder.",
+    "placeholders": { "minutes": { "content": "$1", "example": "5" } }
+  },
+  "optionsShortBreakDurationLabel": { "message": "Short Break Duration:", "description": "Label for Short Break Duration setting" },
+  "optionsShortBreakDurationHint": {
+    "message": "$seconds$ seconds default",
+    "description": "Hint for Short Break Duration. Expects 'seconds' placeholder.",
+    "placeholders": { "seconds": { "content": "$1", "example": "10" } }
+  },
+  "optionsLongPeriodDurationLabel": { "message": "Long Period Duration:", "description": "Label for Long Period Duration setting" },
+  "optionsLongPeriodDurationHint": {
+    "message": "$minutes$ mins default",
+    "description": "Hint for Long Period Duration. Expects 'minutes' placeholder.",
+    "placeholders": { "minutes": { "content": "$1", "example": "90" } }
+  },
+  "optionsLongBreakDurationLabel": { "message": "Long Break Duration:", "description": "Label for Long Break Duration setting" },
+  "optionsLongBreakDurationHint": {
+    "message": "$minutes$ mins default",
+    "description": "Hint for Long Break Duration. Expects 'minutes' placeholder.",
+    "placeholders": { "minutes": { "content": "$1", "example": "20" } }
+  },
+  "optionsShortBreakSoundLabel": { "message": "Short Break Sound:", "description": "Label for Short Break Sound setting" },
+  "optionsLongBreakSoundLabel": { "message": "Long Break Sound:", "description": "Label for Long Break Sound setting" },
+  "optionsPreviewButtonText": { "message": "Preview", "description": "Text for sound Preview button" },
+  "optionsEnableNotificationSoundsLabel": { "message": "Enable notification sounds", "description": "Label for Enable notification sounds setting" },
+  "optionsAutoStartNextSessionLabel": { "message": "Auto-start next session after long break", "description": "Label for Auto-start next session setting" },
+  "optionsThemeLabel": { "message": "Theme:", "description": "Label for Theme setting" },
+  "optionsThemeLight": { "message": "Light", "description": "Light theme option" },
+  "optionsThemeDark": { "message": "Dark", "description": "Dark theme option" },
+  "optionsThemeDefault": { "message": "Default", "description": "Default theme option" },
+  "optionsThemeCustom": { "message": "Custom", "description": "Custom theme option" },
+  "optionsPrimaryColorLabel": { "message": "Primary Color:", "description": "Label for Primary Color setting" },
+  "optionsSecondaryColorLabel": { "message": "Secondary Color:", "description": "Label for Secondary Color setting" },
+  "optionsMinutesUnit": { "message": "minutes", "description": "Unit for time in minutes"},
+  "optionsSecondsUnit": { "message": "seconds", "description": "Unit for time in seconds"},
+
+  "errorShortPeriodDurationRange": { "message": "Short period duration must be between 1-60 minutes", "description": "Validation error message" },
+  "errorShortBreakDurationRange": { "message": "Short break duration must be between 5-60 seconds", "description": "Validation error message" },
+  "errorLongPeriodDurationRange": { "message": "Long period duration must be between 15-240 minutes", "description": "Validation error message" },
+  "errorLongBreakDurationRange": { "message": "Long break duration must be between 1-60 minutes", "description": "Validation error message" },
+  "errorFailedToSaveSettings": { "message": "Failed to save settings:", "description": "Error message prefix" },
+  "successSettingsSaved": { "message": "Settings saved successfully!", "description": "Success message" },
+  "confirmResetSettings": { "message": "Are you sure you want to reset all settings to default?", "description": "Confirmation message" },
+  "successSettingsReset": { "message": "Settings reset to default!", "description": "Success message" },
+  "soundPlaying": { "message": "Playing sound...", "description": "Status message" },
+  "errorCouldNotPlaySound": { "message": "Could not play sound. Check console for details.", "description": "Error message" },
+  "errorFailedToFetchSound": { "message": "Failed to fetch sound file: $status$", "description": "Error message. Expects 'status' placeholder.", "placeholders": { "status": { "content": "$1", "example": "404 Not Found" } } },
+  "soundPlayingWebAudio": { "message": "Playing sound with Web Audio...", "description": "Status message" },
+  "errorWebAudioPlaybackFailed": { "message": "Could not play sound with any method. Check console.", "description": "Error message" },
+
+  "statisticsPageTitle": { "message": "Random Beep Statistics", "description": "Title for the statistics page" },
+  "statisticsHeader": { "message": "Focus Statistics", "description": "Header text for the statistics page" },
+  "statisticsBackButtonTitle": { "message": "Back to Extension", "description": "Tooltip for the back button on statistics page" },
+  "statisticsDailyOverviewTitle": { "message": "Daily Overview", "description": "Title for Daily Overview section" },
+  "statisticsFocusMetricsTitle": { "message": "Focus Metrics", "description": "Title for Focus Metrics section" },
+  "statisticsBreakDistributionTitle": { "message": "Break Distribution", "description": "Title for Break Distribution section" },
+  "statisticsTodayLabel": { "message": "Today", "description": "Label for 'Today' metrics group" },
+  "statisticsThisWeekLabel": { "message": "This Week", "description": "Label for 'This Week' metrics group" },
+  "statisticsTotalFocusTimeLabel": { "message": "Total Focus Time:", "description": "Label for Total Focus Time metric" },
+  "statisticsShortBreaksLabel": { "message": "Short Breaks:", "description": "Label for Short Breaks metric" },
+  "statisticsLongBreaksLabel": { "message": "Long Breaks:", "description": "Label for Long Breaks metric" },
+  "statisticsSessionsCompletedLabel": { "message": "Sessions Completed:", "description": "Label for Sessions Completed metric" },
+  "statisticsExportButtonText": { "message": "Export Data", "description": "Text for Export Data button" },
+  "statisticsClearHistoryButtonText": { "message": "Clear History", "description": "Text for Clear History button" },
+
+  "errorInitStats": { "message": "Failed to initialize statistics. Please try again later.", "description": "Error message in statistics page" },
+  "errorLoadStats": { "message": "Could not load statistics data.", "description": "Error message in statistics page" },
+  "errorLoadCharts": { "message": "Charts could not be loaded. Please reload the page.", "description": "Error message in statistics page" },
+  "statsChartFocusHoursLabel": { "message": "Focus Hours", "description": "Label for focus hours dataset in chart" },
+  "statsChartHoursYAxisLabel": { "message": "Hours", "description": "Y-axis title for hours in chart" },
+  "statsChartShortBreaksLabel": { "message": "Short Breaks", "description": "Label for short breaks dataset in chart" },
+  "statsChartLongBreaksLabel": { "message": "Long Breaks", "description": "Label for long breaks dataset in chart" },
+  "confirmClearStats": { "message": "Are you sure you want to clear all statistics? This action cannot be undone.", "description": "Confirmation message for clearing statistics" },
+  "successStatsCleared": { "message": "Statistics cleared successfully.", "description": "Success message after clearing statistics" },
+  "errorClearStats": { "message": "Failed to clear statistics.", "description": "Error message if clearing statistics fails" },
+  "statsExportedSuccessfully": { "message": "Statistics exported successfully as statistics.json", "description": "Success message for data export" },
+  "statsExportFailed": { "message": "Failed to export statistics.", "description": "Error message for data export failure" },
+  "statsNoDataToExport": { "message": "No statistics data to export.", "description": "Message when there is no data to export" },
+
+  "statsConfirmClear": { "message": "Are you sure you want to clear all statistics? This action cannot be undone.", "description": "Confirmation message for clearing statistics" },
+  "statsDataExported": { "message": "Statistics data exported as statistics.json", "description": "Success message when data is exported" },
+  "statsDataExportFailed": { "message": "Failed to export statistics data.", "description": "Error message when data export fails" },
+  "statsHistoryCleared": { "message": "Statistics history cleared successfully.", "description": "Success message when history is cleared" },
+  "statsClearHistoryFailed": { "message": "Failed to clear statistics history.", "description": "Error message when clearing history fails" },
+
+  "popupResumeButtonText": {
+    "message": "Resume",
+    "description": "Text for the Resume button in the popup."
+  },
+  "popupStartNewButtonText": {
+    "message": "Restart",
+    "description": "Text for the Start New button in the popup (after a long break)."
+  },
+  "popupConfirmResetSession": {
+    "message": "Are you sure you want to reset the current session?",
+    "description": "Confirmation message before resetting a session."
+  },
+
+  "optionsLanguageSettingsTitle": {
+    "message": "Language Settings",
+    "description": "Title for the language settings section in the options page."
+  },
+  "optionsSelectLanguageLabel": {
+    "message": "Select Language:",
+    "description": "Label for the language selection dropdown in the options page."
+  },
+  "optionsLanguageChangeNote": {
+    "message": "Language preference saved. Changes will fully apply when the extension is reloaded or the next time it is opened.",
+    "description": "Note displayed after changing the language."
+  }
+} 

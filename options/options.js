@@ -6,6 +6,46 @@
  */
 
 import { applyTheme } from '../utils/theme-utils.js';
+import { languageManager } from '../utils/language-manager.js'; // Import languageManager
+
+// Function to apply internationalized strings to the page
+function applyI18n() {
+  document.querySelectorAll('[data-i18n-key]').forEach(element => {
+    const key = element.getAttribute('data-i18n-key');
+    let substitutions = null; // Changed to null, manager will handle substitutions format
+    if (key.includes("Hint")) { 
+      substitutions = {}; // Initialize as object for named substitutions
+      if (element.dataset.i18nValueMinutes) {
+        // The manager expects substitutions like { "minutes": "5" } if the placeholder is $minutes$
+        // or it handles $1 if array is passed. Let's assume named for hints for clarity.
+        substitutions.minutes = element.dataset.i18nValueMinutes;
+      } else if (element.dataset.i18nValueSeconds) {
+        substitutions.seconds = element.dataset.i18nValueSeconds;
+      }
+    }
+    const message = languageManager.get(key, substitutions);
+    if (message) {
+      if (element.tagName === 'TITLE') {
+        document.title = message;
+      } else {
+        element.textContent = message;
+      }
+    }
+  });
+
+  const pageTitleMessage = languageManager.get('optionsPageTitle');
+  if (pageTitleMessage) {
+    document.title = pageTitleMessage;
+  }
+
+  document.querySelectorAll('[data-i18n-title-key]').forEach(element => {
+    const key = element.getAttribute('data-i18n-title-key');
+    const message = languageManager.get(key);
+    if (message) {
+      element.title = message;
+    }
+  });
+}
 
 // DOM Elements
 const shortPeriodDurationInput = document.getElementById('shortPeriodDuration');
@@ -23,6 +63,7 @@ const primaryColorValue = primaryColorInput.nextElementSibling;
 const secondaryColorValue = secondaryColorInput.nextElementSibling;
 const saveButton = document.getElementById('saveButton');
 const resetButton = document.getElementById('resetButton');
+const languageSelect = document.getElementById('languageSelect');
 
 // Current settings
 let currentSettings = null;
@@ -35,6 +76,9 @@ async function initOptions() {
   await populateSoundSelects();
   // Load current settings
   await loadSettings();
+  // Set locale in languageManager before applying I18n
+  await languageManager.setLocale(currentSettings.language || 'en');
+  applyI18n(); // Apply translations AFTER locale is set
   // Set up event listeners
   setupEventListeners();
   // Apply theme to options page
@@ -125,6 +169,11 @@ function populateFormWithSettings(settings) {
     primaryColorValue.textContent = primaryColorInput.value;
     secondaryColorValue.textContent = secondaryColorInput.value;
   }
+
+  // Language setting
+  if (languageSelect) {
+    languageSelect.value = settings.language || 'en';
+  }
 }
 
 /**
@@ -179,6 +228,11 @@ function setupEventListeners() {
     saveButton.disabled = false;
   });
 
+  // Language select
+  if (languageSelect) {
+    languageSelect.addEventListener('change', () => saveButton.disabled = false);
+  }
+
   saveButton.addEventListener('click', saveSettings);
   resetButton.addEventListener('click', resetSettings);
 }
@@ -198,41 +252,35 @@ async function saveSettings() {
     notificationSound: notificationSoundCheckbox.checked,
     autoStartNextSession: autoStartNextSessionCheckbox.checked,
     theme: getRadioValue(themeRadios),
+    language: languageSelect ? languageSelect.value : (currentSettings ? currentSettings.language : 'en')
   };
 
-  // Validate inputs before saving
   let validationError = false;
   
-  // Validate shortPeriodDuration (1-60 minutes)
   if (isNaN(newSettings.shortPeriodDuration) || newSettings.shortPeriodDuration < 1 || newSettings.shortPeriodDuration > 60) {
-    showErrorMessage('Short period duration must be between 1-60 minutes');
+    showErrorMessage(languageManager.get("errorShortPeriodDurationRange"));
     validationError = true;
   }
   
-  // Validate shortBreakDuration (5-60 seconds)
   if (isNaN(newSettings.shortBreakDuration) || newSettings.shortBreakDuration < 5 || newSettings.shortBreakDuration > 60) {
-    showErrorMessage('Short break duration must be between 5-60 seconds');
+    showErrorMessage(languageManager.get("errorShortBreakDurationRange"));
     validationError = true;
   }
   
-  // Validate longPeriodDuration (15-240 minutes)
   if (isNaN(newSettings.longPeriodDuration) || newSettings.longPeriodDuration < 15 || newSettings.longPeriodDuration > 240) {
-    showErrorMessage('Long period duration must be between 15-240 minutes');
+    showErrorMessage(languageManager.get("errorLongPeriodDurationRange"));
     validationError = true;
   }
   
-  // Validate longBreakDuration (1-60 minutes)
   if (isNaN(newSettings.longBreakDuration) || newSettings.longBreakDuration < 1 || newSettings.longBreakDuration > 60) {
-    showErrorMessage('Long break duration must be between 1-60 minutes');
+    showErrorMessage(languageManager.get("errorLongBreakDurationRange"));
     validationError = true;
   }
   
-  // If validation failed, don't save
   if (validationError) {
     return;
   }
 
-  // Add custom theme colors if custom theme is selected
   if (newSettings.theme === 'custom') {
     newSettings.customTheme = {
       primaryColor: primaryColorInput.value,
@@ -240,22 +288,32 @@ async function saveSettings() {
     };
   }
 
-  // Save settings
-  chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, (response) => {
+  const languageChanged = currentSettings && currentSettings.language !== newSettings.language;
+
+  chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, async (response) => {
     if (response && response.error) {
-      showErrorMessage(`Failed to save settings: ${response.error}`);
+      showErrorMessage(`${languageManager.get("errorFailedToSaveSettings")} ${response.error}`);
     } else {
       saveButton.disabled = true;
-      showSuccessMessage('Settings saved successfully!');
-      
-      // Keep track of current settings
       currentSettings = response && response.settings ? response.settings : newSettings;
       
-      // Notify background script of settings change
-      chrome.runtime.sendMessage({ 
-        action: 'settingsChanged', 
-        settings: newSettings 
-      });
+      if (languageChanged) {
+        await languageManager.setLocale(currentSettings.language);
+      }
+      
+      populateFormWithSettings(currentSettings);
+      applyThemeWithPreview(currentSettings.theme);
+      applyI18n(); // Re-apply translations for the current page
+
+      if (languageChanged) {
+        showSuccessMessage(`${languageManager.get("successSettingsSaved")} ${languageManager.get("optionsLanguageChangeNote")}`);
+      } else {
+        showSuccessMessage(languageManager.get("successSettingsSaved"));
+      }
+      
+      // Send message that settings (potentially including language) have changed
+      // so other parts of the extension can react if they need to.
+      chrome.runtime.sendMessage({ action: 'settingsChanged', settings: currentSettings });
     }
   });
 }
@@ -263,13 +321,18 @@ async function saveSettings() {
 /**
  * Reset settings to default
  */
-function resetSettings() {
-  if (confirm('Are you sure you want to reset all settings to default?')) {
-    chrome.runtime.sendMessage({ action: 'resetSettings' }, (settings) => {
+async function resetSettings() {
+  if (confirm(languageManager.get("confirmResetSettings"))) {
+    chrome.runtime.sendMessage({ action: 'resetSettings' }, async (settings) => {
       currentSettings = settings;
+      await languageManager.setLocale(currentSettings.language); // Set locale before applying i18n
       populateFormWithSettings(settings);
+      if (languageSelect && settings.language) {
+        languageSelect.value = settings.language;
+      }
+      applyI18n();
       applyThemeWithPreview(settings.theme);
-      showSuccessMessage('Settings reset to default!');
+      showSuccessMessage(languageManager.get("successSettingsReset"));
     });
   }
 }
@@ -312,16 +375,36 @@ function toggleCustomThemeSettings(show) {
  * @param {string} theme - Theme name
  */
 function applyThemeWithPreview(theme) {
-  // Apply the theme using the shared utility
-  applyTheme(theme, theme === 'custom' ? {
-    primaryColor: primaryColorInput.value,
-    secondaryColor: secondaryColorInput.value
-  } : null);
-  
-  // Update the custom theme preview if needed
+  const defaultPrimaryColor = '#00008B'; // Dark Blue
+  const defaultSecondaryColor = '#CDDC39'; // Lime
+  let colorsForApplyTheme = null;
+
   if (theme === 'custom') {
-    updateCustomThemePreview();
+    colorsForApplyTheme = {
+      primaryColor: primaryColorInput.value,
+      secondaryColor: secondaryColorInput.value
+    };
+  } else if (theme === 'default') {
+    colorsForApplyTheme = {
+      primaryColor: defaultPrimaryColor,
+      secondaryColor: defaultSecondaryColor
+    };
   }
+  // For other themes (e.g., 'light', 'dark'), colorsForApplyTheme remains null.
+
+  applyTheme(theme, colorsForApplyTheme); // Apply the theme using the shared utility
+
+  // Manage CSS variables for live preview on the options page.
+  if (theme === 'custom') {
+    updateCustomThemePreview(); // Reads from inputs and sets CSS variables.
+  } else if (theme === 'default') {
+    // For 'default' theme, explicitly set CSS variables to the defined default colors.
+    document.documentElement.style.setProperty('--primary-color', defaultPrimaryColor);
+    document.documentElement.style.setProperty('--secondary-color', defaultSecondaryColor);
+  }
+  // For 'light' and 'dark' themes, it's assumed that applyTheme (e.g., by adding a body class)
+  // results in CSS that defines --primary-color and --secondary-color,
+  // thus updating previews correctly as observed by the user.
 }
 
 /**
@@ -389,13 +472,13 @@ function previewSound(soundFile) {
     // Add feedback when playback starts
     audio.onplay = () => {
       console.log('Sound preview started');
-      showSuccessMessage('Playing sound...');
+      showSuccessMessage(languageManager.get("soundPlaying"));
     };
     
     // Add error handling
     audio.onerror = (err) => {
       console.error('Error playing sound:', err);
-      showErrorMessage('Could not play sound. Check console for details.');
+      showErrorMessage(languageManager.get("errorCouldNotPlaySound"));
       
       // Try fallback method
       previewSoundWithWebAudio(soundFile);
@@ -404,11 +487,13 @@ function previewSound(soundFile) {
     // Play the sound
     audio.play().catch(error => {
       console.error('Error with audio playback:', error);
+      showErrorMessage(languageManager.get("errorCouldNotPlaySound"));
       // Try fallback method on error
       previewSoundWithWebAudio(soundFile);
     });
   } catch (error) {
     console.error('Error setting up audio playback:', error);
+    showErrorMessage(languageManager.get("errorCouldNotPlaySound"));
     previewSoundWithWebAudio(soundFile);
   }
 }
@@ -425,7 +510,7 @@ function previewSoundWithWebAudio(soundFile) {
     fetch(soundUrl)
       .then(response => {
         if (!response.ok) {
-          throw new Error(`Failed to fetch sound file: ${response.status} ${response.statusText}`);
+          throw new Error(languageManager.get("errorFailedToFetchSound", [response.statusText]));
         }
         return response.arrayBuffer();
       })
@@ -447,15 +532,15 @@ function previewSoundWithWebAudio(soundFile) {
         source.start(0);
         
         console.log('Sound preview started with Web Audio API');
-        showSuccessMessage('Playing sound...');
+        showSuccessMessage(languageManager.get("soundPlayingWebAudio"));
       })
       .catch(error => {
         console.error('Web Audio API playback failed:', error);
-        showErrorMessage('Could not play sound with any method');
+        showErrorMessage(languageManager.get("errorWebAudioPlaybackFailed"));
       });
   } catch (error) {
     console.error('Error with Web Audio API setup:', error);
-    showErrorMessage('Could not play sound');
+    showErrorMessage(languageManager.get("errorCouldNotPlaySound"));
   }
 }
 

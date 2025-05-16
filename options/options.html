@@ -3,117 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Random Beep Settings</title>
+  <title data-i18n-key="optionsPageTitle">Random Beep Settings</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Random Beep Settings</h1>
+      <h1 data-i18n-key="optionsPageTitle"></h1>
     </header>
 
     <main>
       <section class="settings-section">
-        <h2>Timer Settings</h2>
+        <h2 data-i18n-key="optionsTimerSettingsTitle">Timer Settings</h2>
         <div class="settings-group">
           <div class="setting-item">
-            <label for="shortPeriodDuration">Short Period Duration: <span class="range-hint">5 mins default</span></label>
+            <label for="shortPeriodDuration"><span data-i18n-key="optionsShortPeriodDurationLabel">Short Period Duration:</span> <span class="range-hint" data-i18n-key="optionsShortPeriodDurationHint" data-i18n-value-minutes="5">(5 mins default)</span></label>
             <div class="input-with-unit">
               <input type="number" id="shortPeriodDuration" min="1" max="60" value="5">
-              <span class="unit">minutes</span>
+              <span class="unit" data-i18n-key="optionsMinutesUnit">minutes</span>
             </div>
           </div>
 
           <div class="setting-item">
-            <label for="shortBreakDuration">Short Break Duration: <span class="range-hint">10 seconds default</span></label>
+            <label for="shortBreakDuration"><span data-i18n-key="optionsShortBreakDurationLabel">Short Break Duration:</span> <span class="range-hint" data-i18n-key="optionsShortBreakDurationHint" data-i18n-value-seconds="10">(10 seconds default)</span></label>
             <div class="input-with-unit">
               <input type="number" id="shortBreakDuration" min="5" max="60" value="10">
-              <span class="unit">seconds</span>
+              <span class="unit" data-i18n-key="optionsSecondsUnit">seconds</span>
             </div>
           </div>
 
           <div class="setting-item">
-            <label for="longPeriodDuration">Long Period Duration: <span class="range-hint">90 mins default</span></label>
+            <label for="longPeriodDuration"><span data-i18n-key="optionsLongPeriodDurationLabel">Long Period Duration:</span> <span class="range-hint" data-i18n-key="optionsLongPeriodDurationHint" data-i18n-value-minutes="90">(90 mins default)</span></label>
             <div class="input-with-unit">
               <input type="number" id="longPeriodDuration" min="15" max="240" value="90">
-              <span class="unit">minutes</span>
+              <span class="unit" data-i18n-key="optionsMinutesUnit">minutes</span>
             </div>
           </div>
 
           <div class="setting-item">
-            <label for="longBreakDuration">Long Break Duration: <span class="range-hint">20 mins default</span></label>
+            <label for="longBreakDuration"><span data-i18n-key="optionsLongBreakDurationLabel">Long Break Duration:</span> <span class="range-hint" data-i18n-key="optionsLongBreakDurationHint" data-i18n-value-minutes="20">(20 mins default)</span></label>
             <div class="input-with-unit">
               <input type="number" id="longBreakDuration" min="1" max="60" value="20">
-              <span class="unit">minutes</span>
+              <span class="unit" data-i18n-key="optionsMinutesUnit">minutes</span>
             </div>
           </div>
 
           <div class="setting-item">
-            <label for="shortBreakSoundSelect">Short Break Sound:</label>
+            <label for="shortBreakSoundSelect" data-i18n-key="optionsShortBreakSoundLabel">Short Break Sound:</label>
             <div class="sound-selection-container">
               <select id="shortBreakSoundSelect"></select>
-              <button type="button" id="previewShortBreakSound" class="preview-sound-btn">Preview</button>
+              <button type="button" id="previewShortBreakSound" class="preview-sound-btn" data-i18n-key="optionsPreviewButtonText">Preview</button>
             </div>
           </div>
 
           <div class="setting-item">
-            <label for="longBreakSoundSelect">Long Break Sound:</label>
+            <label for="longBreakSoundSelect" data-i18n-key="optionsLongBreakSoundLabel">Long Break Sound:</label>
             <div class="sound-selection-container">
               <select id="longBreakSoundSelect"></select>
-              <button type="button" id="previewLongBreakSound" class="preview-sound-btn">Preview</button>
+              <button type="button" id="previewLongBreakSound" class="preview-sound-btn" data-i18n-key="optionsPreviewButtonText">Preview</button>
             </div>
           </div>
         </div>
       </section>
 
       <section class="settings-section">
-        <h2>Notification Settings</h2>
+        <h2 data-i18n-key="optionsNotificationSettingsTitle">Notification Settings</h2>
         <div class="settings-group">
           <div class="setting-item">
             <label class="checkbox-label">
               <input type="checkbox" id="notificationSound" checked>
-              Enable notification sounds
+              <span data-i18n-key="optionsEnableNotificationSoundsLabel">Enable notification sounds</span>
             </label>
           </div>
 
           <div class="setting-item">
             <label class="checkbox-label">
               <input type="checkbox" id="autoStartNextSession">
-              Auto-start next session after long break
+              <span data-i18n-key="optionsAutoStartNextSessionLabel">Auto-start next session after long break</span>
             </label>
           </div>
-
-          <!-- Redundant sound selection removed - now using specific sound selections in Timer Settings -->
         </div>
       </section>
 
       <section class="settings-section">
-        <h2>Theme Settings</h2>
+        <h2 data-i18n-key="optionsThemeSettingsTitle">Theme Settings</h2>
         <div class="settings-group">
           <div class="setting-item">
-            <label>Theme:</label>
+            <label data-i18n-key="optionsThemeLabel">Theme:</label>
             <div class="radio-group">
               <label class="radio-label">
                 <input type="radio" name="theme" value="light">
-                Light
+                <span data-i18n-key="optionsThemeLight">Light</span>
               </label>
               <label class="radio-label">
                 <input type="radio" name="theme" value="dark">
-                Dark
+                <span data-i18n-key="optionsThemeDark">Dark</span>
               </label>
               <label class="radio-label">
                 <input type="radio" name="theme" value="default" checked>
-                Default
+                <span data-i18n-key="optionsThemeDefault">Default</span>
               </label>
               <label class="radio-label">
                 <input type="radio" name="theme" value="custom">
-                Custom
+                <span data-i18n-key="optionsThemeCustom">Custom</span>
               </label>
             </div>
           </div>
 
           <div class="setting-item custom-theme-setting">
-            <label for="primaryColor">Primary Color:</label>
+            <label for="primaryColor" data-i18n-key="optionsPrimaryColorLabel">Primary Color:</label>
             <div class="color-picker">
               <input type="color" id="primaryColor" value="#3F51B5">
               <span class="color-value">#3F51B5</span>
@@ -121,7 +119,7 @@
           </div>
 
           <div class="setting-item custom-theme-setting">
-            <label for="secondaryColor">Secondary Color:</label>
+            <label for="secondaryColor" data-i18n-key="optionsSecondaryColorLabel">Secondary Color:</label>
             <div class="color-picker">
               <input type="color" id="secondaryColor" value="#FFC107">
               <span class="color-value">#FFC107</span>
@@ -129,11 +127,24 @@
           </div>
         </div>
       </section>
+
+      <section class="settings-section">
+        <h2 data-i18n-key="optionsLanguageSettingsTitle">Language Settings</h2>
+        <div class="settings-group">
+          <div class="setting-item">
+            <label for="languageSelect" data-i18n-key="optionsSelectLanguageLabel">Select Language:</label>
+            <select id="languageSelect">
+              <option value="en">English</option>
+              <option value="zh">中文 (Chinese)</option>
+            </select>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer>
-      <button id="saveButton" class="primary-button">Save Settings</button>
-      <button id="resetButton" class="secondary-button">Reset to Default</button>
+      <button id="saveButton" class="primary-button" data-i18n-key="optionsSaveButtonText" disabled></button>
+      <button id="resetButton" class="secondary-button" data-i18n-key="optionsResetButtonText"></button>
     </footer>
   </div>
 

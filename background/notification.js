@@ -8,6 +8,7 @@
  */
 
 import { loadSettings } from '../storage/settings.js';
+import { languageManager } from '../utils/language-manager.js'; // Import languageManager
 
 // Constants for offscreen document
 const OFFSCREEN_PATH = 'offscreen.html';
@@ -183,42 +184,45 @@ async function initNotifications() {
 async function showNotification(type, options = {}) {
   const settings = await loadSettings();
   
+  // Ensure language manager has the correct locale based on loaded settings
+  await languageManager.setLocale(settings.language || 'en');
+
   // Define notification content based on type
-  let title, message, iconUrl;
-  
+  let titleKey, messageKey, messageSubstitutions = null;
+  let iconUrl = 'icons/128.png'; // Default icon
+
   switch (type) {
     case NotificationType.SHORT_BREAK:
-      title = 'Time for a Short Break!';
-      message = `Take a ${settings.shortBreakDuration} second break to rest your eyes and mind.`;
-      iconUrl = 'icons/128.png';
+      titleKey = 'notificationShortBreakTitle';
+      messageKey = 'notificationShortBreakMessage';
+      messageSubstitutions = [String(settings.shortBreakDuration)];
       break;
     case NotificationType.SHORT_BREAK_END:
-      title = 'Short Break Finished';
-      message = 'Your short break is over. Back to focus mode!';
-      iconUrl = 'icons/128.png';
+      titleKey = 'notificationShortBreakEndTitle';
+      messageKey = 'notificationShortBreakEndMessage';
       break;
     case NotificationType.LONG_BREAK:
-      title = 'Time for a Long Break!';
-      message = `Take a ${settings.longBreakDuration} minute break to recharge.`;
-      iconUrl = 'icons/128.png';
+      titleKey = 'notificationLongBreakTitle';
+      messageKey = 'notificationLongBreakMessage';
+      messageSubstitutions = [String(settings.longBreakDuration)];
       break;
     case NotificationType.SESSION_COMPLETE:
-      title = 'Focus Session Complete';
-      message = 'Great job! You\'ve completed your focus session.';
-      iconUrl = 'icons/128.png';
+      titleKey = 'notificationSessionCompleteTitle';
+      messageKey = 'notificationSessionCompleteMessage';
       break;
     default:
-      title = 'Random Beep';
-      message = 'Notification from Random Beep';
-      iconUrl = 'icons/128.png';
+      titleKey = 'extensionName'; // Use the general extension name as title
+      messageKey = 'notificationDefaultMessage';
   }
   
-  // Override defaults with provided options
-  title = options.title || title;
-  message = options.message || message;
-  iconUrl = options.iconUrl || iconUrl;
+  const title = languageManager.get(titleKey);
+  const message = languageManager.get(messageKey, messageSubstitutions);
   
-  console.log(`Showing notification: ${title} - ${message}`);
+  const finalTitle = options.title || title;
+  const finalMessage = options.message || message;
+  iconUrl = options.iconUrl || iconUrl; // Icon can still be overridden by options
+  
+  console.log(`Showing notification: ${finalTitle} - ${finalMessage}`);
   
   // Create notification and play sound in parallel
   const notificationPromise = new Promise((resolve) => {
@@ -232,16 +236,16 @@ async function showNotification(type, options = {}) {
       
       // Create the notification
       const notificationId = type + '-' + Date.now();
-      chrome.alarms.onAlarm.addListener(() => {
-        chrome.action.setBadgeText({ text: '' });
-        chrome.notifications.create(notificationId, {
+      const endBreakButtonTitle = languageManager.get("notificationEndBreakButton");
+
+      chrome.notifications.create(notificationId, {
         type: 'basic',
-        title: title,
-        message: message,
+        title: finalTitle,
+        message: finalMessage,
         iconUrl: chrome.runtime.getURL(iconUrl),
-        priority: type === NotificationType.LONG_BREAK ? 2 : 0, // High priority for long breaks
-        requireInteraction: type === NotificationType.LONG_BREAK, // Keep long break notifications visible
-        buttons: type === NotificationType.LONG_BREAK ? [{ title: 'End Break' }] : []
+        priority: type === NotificationType.LONG_BREAK ? 2 : 0,
+        requireInteraction: type === NotificationType.LONG_BREAK,
+        buttons: type === NotificationType.LONG_BREAK ? [{ title: endBreakButtonTitle }] : []
       }, (createdId) => {
         if (chrome.runtime.lastError) {
           console.error('Error creating notification:', chrome.runtime.lastError);
@@ -251,25 +255,25 @@ async function showNotification(type, options = {}) {
           resolve(createdId);
         }
       });
-      });
-      
-      
     } catch (error) {
-      console.error('Exception while creating notification:', error);
+      console.error('Error in notificationPromise setup:', error);
       resolve(null);
     }
   });
   
-  // Play sound if enabled
-  if (settings.notificationSound) {
-    try {
-      playNotificationSound(type, settings);
-    } catch (error) {
-      console.error('Error playing notification sound:', error);
-    }
-  }
+  const soundPromise = playNotificationSound(type, settings);
   
-  return notificationPromise;
+  // Wait for both notification and sound to complete (or fail gracefully)
+  try {
+    const [notificationResult, soundResult] = await Promise.all([
+      notificationPromise,
+      soundPromise
+    ]);
+    return notificationResult; // Return the notification ID if successful
+  } catch (error) {
+    console.error('Error showing notification or playing sound:', error);
+    return null;
+  }
 }
 
 /**

@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Random Beep</title>
+  <title data-i18n-key="extensionName">Random Beep</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Random Beep</h1>
-      <button id="settings-button" class="icon-button" title="Settings">⚙️</button>
+      <h1 data-i18n-key="extensionName">Random Beep</h1>
+      <button id="settings-button" class="icon-button" data-i18n-title-key="popupSettingsButtonTitle">⚙️</button>
     </header>
 
     <div class="timer-display">
@@ -21,35 +21,35 @@
         </div>
       </div>
       <div id="break-info" class="break-info">
-        <div id="short-break-info">Short break: <span id="short-break-time">calculating...</span></div>
-        <div id="long-break-info">Long break: <span id="long-break-time">calculating...</span></div>
+        <div id="short-break-info"><span data-i18n-key="popupShortBreakLabel">Short break:</span> <span id="short-break-time" data-i18n-key-calculating="popupCalculatingStatus">calculating...</span></div>
+        <div id="long-break-info"><span data-i18n-key="popupLongBreakLabel">Long break:</span> <span id="long-break-time" data-i18n-key-calculating="popupCalculatingStatus">calculating...</span></div>
       </div>
     </div>
 
     <div class="controls">
       <button id="start-button" class="control-button">
         <span>▶️</span>
-        <span>Start</span>
+        <span data-i18n-key="popupStartButtonText">Start</span>
       </button>
       <button id="pause-button" class="control-button" disabled>
         <span>⏸️</span>
-        <span>Pause</span>
+        <span data-i18n-key="popupPauseButtonText">Pause</span>
       </button>
       <button id="reset-button" class="control-button">
         <span>⏹️</span>
-        <span>Reset</span>
+        <span data-i18n-key="popupResetButtonText">Reset</span>
       </button>
     </div>
 
     <div class="stats-summary">
-      <div id="today-focus">Today's Focus: 0h 0m</div>
-      <div id="breaks-taken">Breaks Taken: 0 short, 0 long</div>
+      <div id="today-focus"><span data-i18n-key="popupTodayFocusLabel">Today's Focus:</span> 0h 0m</div>
+      <div id="breaks-taken"><span data-i18n-key="popupBreaksTakenLabel">Breaks Taken:</span> 0 short, 0 long</div>
     </div>
 
     <div class="footer">
       <button id="stats-button" class="full-width-button">
         <span>📊</span>
-        <span>View Full Statistics</span>
+        <span data-i18n-key="popupViewStatsButtonText">View Full Statistics</span>
       </button>
     </div>
   </div>
