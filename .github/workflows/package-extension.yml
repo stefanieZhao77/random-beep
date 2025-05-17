@@ -27,19 +27,30 @@ jobs:
           # Create zip directly from files without creating nested folders
           cd $(pwd) && zip -r dist/random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
       
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      
       - name: Create extension package (CRX)
         run: |
           echo "Creating Chrome extension CRX package..."
-          # Generate a key if not exists (will be used for testing only)
+          # Generate a key if not exists
           if [ ! -f dist/key.pem ]; then
             openssl genrsa -out dist/key.pem 2048
           fi
           
-          # Install crx3-utils for CRX creation
-          npm install -g crx3-cli
+          # Create a temporary directory for packing
+          mkdir -p temp_ext
+          cp -r background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js temp_ext/
           
-          # Build the CRX file
-          crx3 -p dist/key.pem -o dist/random-beep.crx background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
+          # Use Chrome to pack the extension
+          google-chrome --pack-extension=temp_ext --pack-extension-key=dist/key.pem
+          
+          # Move the created CRX to dist folder
+          mv temp_ext.crx dist/random-beep.crx
       
       - name: Upload extension packages as artifacts
         uses: actions/upload-artifact@v4
