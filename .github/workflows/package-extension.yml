@@ -20,17 +20,34 @@ jobs:
         with:
           node-version: 20
       
-      - name: Create extension package
+      - name: Create extension package (ZIP)
         run: |
-          echo "Creating Chrome extension package..."
+          echo "Creating Chrome extension ZIP package..."
           mkdir -p dist
-          zip -r dist/random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
+          # Create zip directly from files without creating nested folders
+          cd $(pwd) && zip -r dist/random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
       
-      - name: Upload extension zip as artifact
+      - name: Create extension package (CRX)
+        run: |
+          echo "Creating Chrome extension CRX package..."
+          # Generate a key if not exists (will be used for testing only)
+          if [ ! -f dist/key.pem ]; then
+            openssl genrsa -out dist/key.pem 2048
+          fi
+          
+          # Install crx3-utils for CRX creation
+          npm install -g crx3-cli
+          
+          # Build the CRX file
+          crx3 -p dist/key.pem -o dist/random-beep.crx background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
+      
+      - name: Upload extension packages as artifacts
         uses: actions/upload-artifact@v4
         with:
           name: random-beep-extension
-          path: dist/random-beep.zip
+          path: |
+            dist/random-beep.zip
+            dist/random-beep.crx
       
       - name: Create release if tagged version
         if: startsWith(github.ref, 'refs/tags/v')
@@ -42,4 +59,5 @@ jobs:
           gh release create "${{ github.ref_name }}" \
             --title "Random Beep v$VERSION" \
             --notes "Release of version $VERSION. See CHANGELOG.md for details." \
-            dist/random-beep.zip 
+            dist/random-beep.zip \
+            dist/random-beep.crx 
