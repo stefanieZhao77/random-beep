@@ -27,12 +27,11 @@ jobs:
           # Create zip directly from files without creating nested folders
           cd $(pwd) && zip -r dist/random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
       
-      - name: Install Chrome
+      - name: Install dependencies for CRX creation
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          npm init -y
+          npm install chrome-webstore-upload-cli --save-dev
+          npm install crx --save-dev
       
       - name: Create extension package (CRX)
         run: |
@@ -46,11 +45,11 @@ jobs:
           mkdir -p temp_ext
           cp -r background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js temp_ext/
           
-          # Use Chrome to pack the extension
-          google-chrome --pack-extension=temp_ext --pack-extension-key=dist/key.pem
+          # Use crx npm package to create the CRX file
+          npx crx pack temp_ext -o dist/random-beep.crx -p dist/key.pem
           
-          # Move the created CRX to dist folder
-          mv temp_ext.crx dist/random-beep.crx
+          # List files to verify
+          ls -la dist/
       
       - name: Upload extension packages as artifacts
         uses: actions/upload-artifact@v4
@@ -67,8 +66,20 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Creating release for version $VERSION"
-          gh release create "${{ github.ref_name }}" \
-            --title "Random Beep v$VERSION" \
-            --notes "Release of version $VERSION. See CHANGELOG.md for details." \
-            dist/random-beep.zip \
-            dist/random-beep.crx 
+          echo "Checking if CRX file exists:"
+          ls -la dist/
+          
+          # Create release with available files
+          if [ -f "dist/random-beep.crx" ]; then
+            gh release create "${{ github.ref_name }}" \
+              --title "Random Beep v$VERSION" \
+              --notes "Release of version $VERSION. See CHANGELOG.md for details." \
+              dist/random-beep.zip \
+              dist/random-beep.crx
+          else
+            echo "CRX file not found, creating release with ZIP only"
+            gh release create "${{ github.ref_name }}" \
+              --title "Random Beep v$VERSION" \
+              --notes "Release of version $VERSION. See CHANGELOG.md for details." \
+              dist/random-beep.zip
+          fi 
