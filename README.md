@@ -1,7 +1,5 @@
 # Random Beep - Focus Timer Extension
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/stefanieZhao77/random-beep/package-extension.yml?branch=main)
-![GitHub](https://img.shields.io/github/license/stefanieZhao77/random-beep?label=license&color=blue)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 
 Random Beep is a Chrome extension designed to help users maintain focus and eye health through a combination of focused work periods with randomized short breaks and scheduled long breaks.
