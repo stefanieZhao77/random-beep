@@ -4,9 +4,14 @@
 
 Random Beep is a Chrome extension designed to help users maintain focus and eye health through a combination of focused work periods with randomized short breaks and scheduled long breaks.
 
-<p align="center">
-  <img src="docs/images/screenshot.png" width="400" alt="Random Beep Screenshot">
-</p>
+<div align="center">
+  <img src="docs/images/1.png" width="200" alt="Random Beep" style="margin: 10px;">
+</div>
+
+<div align="center" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+  <img src="docs/images/2.png" width="400" alt="Random Beep Settings" style="margin: 10px;">
+  <img src="docs/images/3.png" width="400" alt="Random Beep Statistics" style="margin: 10px;">
+</div>
 
 ## Features
 
