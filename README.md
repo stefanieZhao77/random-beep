@@ -1,7 +1,7 @@
 # Random Beep - Focus Timer Extension
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/YOUR-USERNAME/random-beep/package-extension.yml?branch=main)
-![GitHub](https://img.shields.io/github/license/YOUR-USERNAME/random-beep?label=license&color=blue)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/stefanieZhao77/random-beep/package-extension.yml?branch=main)
+![GitHub](https://img.shields.io/github/license/stefanieZhao77/random-beep?label=license&color=blue)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 
 Random Beep is a Chrome extension designed to help users maintain focus and eye health through a combination of focused work periods with randomized short breaks and scheduled long breaks.
@@ -29,11 +29,16 @@ Random Beep is a Chrome extension designed to help users maintain focus and eye 
 
 ### Manual Installation (Developer Mode)
 
-1. Download the latest release zip file from the [Releases page](https://github.com/YOUR-USERNAME/random-beep/releases)
-2. Extract the zip file to a folder
-3. Open Chrome and go to `chrome://extensions/`
-4. Enable "Developer mode" in the top right
-5. Click "Load unpacked" and select the extracted folder
+1. Download the latest release (.zip or .crx file) from the [Releases page](https://github.com/stefanieZhao77/random-beep/releases)
+2. For .zip file:
+   - Extract the zip file to a folder
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Click "Load unpacked" and select the extracted folder
+3. For .crx file:
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Drag and drop the .crx file onto the extensions page
 
 ## Usage
 
@@ -53,7 +58,7 @@ Random Beep is a Chrome extension designed to help users maintain focus and eye 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/YOUR-USERNAME/random-beep.git
+   git clone https://github.com/stefanieZhao77/random-beep.git
    cd random-beep
    ```
 
@@ -61,13 +66,23 @@ Random Beep is a Chrome extension designed to help users maintain focus and eye 
 
 ### Building
 
-To create a packaged extension file:
+#### Automatic Builds with GitHub Actions
+
+This project uses GitHub Actions to automatically build and package the extension:
+
+1. Push to the `main` branch or create a pull request to trigger the build workflow
+2. Create a version tag to generate a release:
+   ```bash
+   git tag -a vX.X.X -m "Version X.X.X release"
+   git push origin vX.X.X
+   ```
+
+#### Manual Building
+
+To create a packaged extension file locally:
 
 ```bash
-# Using GitHub Actions locally with act (optional)
-act -j build
-
-# Or manually
+# Create a ZIP package
 zip -r random-beep.zip background icons lib options popup sounds statistics storage utils _locales manifest.json offscreen.html offscreen.js
 ```
 
@@ -75,7 +90,7 @@ zip -r random-beep.zip background icons lib options popup sounds statistics stor
 
 This project uses GitHub Actions for automated workflows:
 
-1. **Package Extension**: Automatically creates a zip file of the extension when changes are pushed to main
+1. **Package Extension**: Automatically creates both .zip and .crx files when changes are pushed to main or a version tag is created
 2. **Bump Version**: A manual workflow to increment the version number in `manifest.json`
 
 ## Contributing
