@@ -13,6 +13,9 @@ on:
           - minor
           - patch
 
+permissions:
+  contents: write  # This gives the workflow permission to push to the repository
+
 jobs:
   bump-version:
     runs-on: ubuntu-latest
@@ -22,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub token for authentication
       
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -47,5 +51,5 @@ jobs:
       
       - name: Push changes
         run: |
-          git push
-          git push --tags 
+          git push origin HEAD:main
+          git push origin --tags 
