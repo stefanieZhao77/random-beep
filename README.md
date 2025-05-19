@@ -26,7 +26,7 @@ Random Beep is a Chrome extension designed to help users maintain focus and eye 
 
 ### From Chrome Web Store
 
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore) (link coming soon)
+1. Visit the [Chrome Web Store](https://chromewebstore.google.com/detail/random-beep/lciepkhcmnkpaieceihhpmjemlpeiigc)
 2. Click "Add to Chrome"
 3. Confirm the installation
 

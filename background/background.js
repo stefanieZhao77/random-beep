@@ -9,7 +9,7 @@ import { loadSettings, saveSettings, getDefaultSettings, onSettingsChanged } fro
 import { loadSessionState, onSessionChanged, SessionState, updateSessionState } from '../storage/session.js';
 import { initTimer, startSession, pauseSession, resumeSession, resetSession, handleAlarm, endShortBreak, endLongBreak } from './timer.js';
 import { initNotificationClickHandler, initNotifications, showNotification, NotificationType } from './notification.js';
-import { clearStatistics } from '../storage/statistics.js';
+import { clearStatistics, getTodayStatistics } from '../storage/statistics.js';
 
 // Register message listener at the top level to ensure service worker is always listening
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -225,6 +225,51 @@ function handleMessage(message, sender, sendResponse) {
         }).catch(err => {
           console.error('Error clearing statistics:', err);
           try { sendResponse({error: 'Failed to clear statistics'}); } catch (e) {}
+        });
+        return true;
+        
+      case 'getTodayStatistics':
+        getTodayStatistics().then(stats => {
+          try { 
+            sendResponse(stats); 
+          } catch (e) { 
+            console.error('Error sending response for getTodayStatistics:', e, 'Stats were:', stats);
+          } 
+        }).catch(err => {
+          console.error('Error calling getTodayStatistics in background:', err);
+          try { 
+            sendResponse({ error: 'Failed to get today statistics' }); 
+          } catch (e) {
+            console.error('Error sending error response for getTodayStatistics:', e);
+          }
+        });
+        return true;
+        
+      case 'getStatistics':
+        import('../storage/statistics.js').then(async ({ getTodayStatistics, getThisWeekStatistics }) => {
+          try {
+            const todayStats = await getTodayStatistics();
+            const weekStats = await getThisWeekStatistics();
+            
+            const combinedStats = {
+              totalFocusDurationToday: todayStats.totalFocusTime,
+              shortBreaksToday: todayStats.shortBreaksTaken,
+              longBreaksToday: todayStats.longBreaksTaken,
+              sessionsCompletedToday: todayStats.sessionsCompleted,
+              totalFocusDurationWeek: weekStats.totalFocusTime,
+              shortBreaksWeek: weekStats.shortBreaksTaken,
+              longBreaksWeek: weekStats.longBreaksTaken,
+              sessionsCompletedWeek: weekStats.sessionsCompleted
+            };
+            
+            sendResponse(combinedStats);
+          } catch (err) {
+            console.error('Error compiling statistics:', err);
+            try { sendResponse({error: 'Failed to get statistics'}); } catch (e) {}
+          }
+        }).catch(err => {
+          console.error('Error importing statistics module:', err);
+          try { sendResponse({error: 'Failed to import statistics module'}); } catch (e) {}
         });
         return true;
         

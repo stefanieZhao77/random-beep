@@ -471,29 +471,28 @@ function updateSessionStateClasses() {
  */
 async function loadStatistics() {
   try {
-    const stats = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: 'getStatistics' }, resolve);
+    // Get today's statistics from storage/statistics.js
+    const todayStats = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: 'getTodayStatistics' }, (response) => {
+        console.log('[Popup] Received response for getTodayStatistics:', response);
+        resolve(response);
+      });
     });
+    console.log('[Popup] todayStats object after promise resolution:', todayStats);
 
-    if (stats) {
-      // Update Today's Focus time
-      const focusLabel = languageManager.get("popupTodayFocusLabel");
-      todayFocusElement.textContent = `${focusLabel} ${formatDuration(stats.totalFocusDurationToday || 0)}`;
+    // todayStats is guaranteed to be an object by getTodayStatistics, 
+    // but its properties (like totalFocusTime, shortBreaksTaken) might be undefined if from old/malformed storage
+    const focusLabel = languageManager.get("popupTodayFocusLabel");
+    // formatDuration handles undefined or 0 for totalFocusTime correctly, resulting in "0h 0m"
+    todayFocusElement.textContent = `${focusLabel} ${formatDuration(todayStats.totalFocusTime)}`;
 
-      // Update Breaks Taken
-      const breaksLabel = languageManager.get("popupBreaksTakenLabel");
-      const shortUnit = languageManager.get("popupBreaksTakenShortUnit");
-      const longUnit = languageManager.get("popupBreaksTakenLongUnit");
-      breaksTakenElement.textContent = `${breaksLabel} ${stats.shortBreaksToday || 0} ${shortUnit}, ${stats.longBreaksToday || 0} ${longUnit}`;
-    } else {
-      // Handle case where stats might be null or undefined
-      const focusLabel = languageManager.get("popupTodayFocusLabel");
-      todayFocusElement.textContent = `${focusLabel} 0h 0m`;
-      const breaksLabel = languageManager.get("popupBreaksTakenLabel");
-      const shortUnit = languageManager.get("popupBreaksTakenShortUnit");
-      const longUnit = languageManager.get("popupBreaksTakenLongUnit");
-      breaksTakenElement.textContent = `${breaksLabel} 0 ${shortUnit}, 0 ${longUnit}`;
-    }
+    // Update Breaks Taken
+    const breaksLabel = languageManager.get("popupBreaksTakenLabel");
+    const shortUnit = languageManager.get("popupBreaksTakenShortUnit"); // Expected to be "short" or similar
+    const longUnit = languageManager.get("popupBreaksTakenLongUnit");   // Expected to be "long" or similar
+    
+    // Reinstate `|| 0` for break counts to handle cases where these properties might be undefined in todayStats
+    breaksTakenElement.textContent = `${breaksLabel} ${todayStats.shortBreaksTaken || 0} ${shortUnit}, ${todayStats.longBreaksTaken || 0} ${longUnit}`;
   } catch (error) {
     console.error('Error loading statistics for popup:', error);
     // Fallback display on error
